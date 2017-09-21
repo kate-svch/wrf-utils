@@ -53,7 +53,9 @@ def get_q(event_datetime, vector=1, name='QVAPOR'):
     time_index = get_index(event_datetime, vector)
     file = get_wrf_file()
     vapor = file.variables[name].data[:] / 1
-    return vapor[time_index:time_index + vector, :, y_lat, x_lon]
+    alt = file.variables['ALT'].data[:]
+    real_vapor_dens = vapor / alt
+    return real_vapor_dens[time_index:time_index + vector, :, y_lat, x_lon]
 
 
 def get_height():
