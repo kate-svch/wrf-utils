@@ -54,7 +54,7 @@ def get_q(event_datetime, vector=1, name='QVAPOR'):
     file = get_wrf_file()
     vapor = file.variables[name].data[:] / 1
     alt = file.variables['ALT'].data[:]
-    real_vapor_dens = 1000 * vapor / alt
+    real_vapor_dens = vapor / alt
     return real_vapor_dens[time_index:time_index + vector, :, y_lat, x_lon]
 
 
@@ -76,25 +76,18 @@ def main():
     y = get_height()[:-1]
     x = [event_datetime + datetime.timedelta(minutes=10 * i) for i in range(time_frames)]
 
-    def plot_values(name, title):
-        plt.contourf(x, y, np.array(get_q(event_datetime, vector=time_frames, name=name)).transpose())
-        plt.title(title)
-        plt.xlabel('Time')
-        plt.ylabel('Height, m')
-        plt.colorbar()
-        plt.show()
-
     # plt.plot(x, get_t2(event_datetime, vector=time_frames))
     # plt.plot(x, get_wind(event_datetime, vector=time_frames))
     # plt.plot(x, get_s_pressure(event_datetime, vector=time_frames))
-    plot_values("QICE", 'Ice')
     # plt.contourf(x, y, np.array(get_q(event_datetime, vector=time_frames, name="QICE")).transpose())
-    # plt.contourf(x, y, np.array(get_q(event_datetime, vector=time_frames, name="QSNOW")).transpose())
+    plt.contourf(x, y, np.array(get_q(event_datetime, vector=time_frames, name="QSNOW")).transpose())
     # plt.contourf(x, y, np.array(get_q(event_datetime, vector=time_frames, name="QVAPOR")).transpose())
     # plt.contourf(x, y, np.array(get_q(event_datetime, vector=time_frames, name="QRAIN")).transpose())
     # plt.contourf(x, y, np.array(get_q(event_datetime, vector=time_frames, name="QGRAUP")).transpose())
     # plt.contourf(x, y, np.array(get_q(event_datetime, vector=time_frames, name="QCLOUD")).transpose())
-    plot_values("QSNOW", "snow")
+
+    plt.colorbar()
+    plt.show()
 
 
 def get_index(event_datetime, vector):
