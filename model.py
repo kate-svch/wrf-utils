@@ -33,7 +33,7 @@ def get_t2(event_datetime, vector=1):
     return temp_m2[time_index:time_index + vector, y_lat, x_lon]
 
 
-def get_wind(event_datetime, vector=1):
+def get_s_wind(event_datetime, vector=1):
     time_index = get_index(event_datetime, vector)
     file = get_wrf_file()
     u10 = file.variables['U10'].data[:]
@@ -49,11 +49,22 @@ def get_s_pressure(event_datetime, vector=1):
     return s_pressure[time_index:time_index + vector, y_lat, x_lon]
 
 
+def get_wind(event_datetime, vector=1):
+    time_index = get_index(event_datetime, vector)
+    file = get_wrf_file()
+    u = file.variables['U'].data[:, :, :, :1]
+    v = file.variables['V'].data[:, :, :1, :]
+    wind = (u * u + v * v) ** 0.5
+    return wind[time_index:time_index + vector, :, y_lat, x_lon]
+
+
 def get_q(event_datetime, vector=1, name='QVAPOR'):
     time_index = get_index(event_datetime, vector)
     file = get_wrf_file()
     vapor = file.variables[name].data[:] / 1
-    return vapor[time_index:time_index + vector, :, y_lat, x_lon]
+    alt = file.variables['ALT'].data[:]
+    real_vapor_dens = vapor / alt
+    return real_vapor_dens[time_index:time_index + vector, :, y_lat, x_lon]
 
 
 def get_height():
@@ -75,15 +86,17 @@ def main():
     x = [event_datetime + datetime.timedelta(minutes=10 * i) for i in range(time_frames)]
 
     # plt.plot(x, get_t2(event_datetime, vector=time_frames))
-    # plt.plot(x, get_wind(event_datetime, vector=time_frames))
+    # plt.plot(x, get_s_wind(event_datetime, vector=time_frames))
     # plt.plot(x, get_s_pressure(event_datetime, vector=time_frames))
+    plt.contourf(x, y, np.array(get_wind(event_datetime, vector=time_frames)).transpose())
     # plt.contourf(x, y, np.array(get_q(event_datetime, vector=time_frames, name="QICE")).transpose())
-    plt.contourf(x, y, np.array(get_q(event_datetime, vector=time_frames, name="QSNOW")).transpose())
+    # plt.contourf(x, y, np.array(get_q(event_datetime, vector=time_frames, name="QSNOW")).transpose())
     # plt.contourf(x, y, np.array(get_q(event_datetime, vector=time_frames, name="QVAPOR")).transpose())
     # plt.contourf(x, y, np.array(get_q(event_datetime, vector=time_frames, name="QRAIN")).transpose())
     # plt.contourf(x, y, np.array(get_q(event_datetime, vector=time_frames, name="QGRAUP")).transpose())
     # plt.contourf(x, y, np.array(get_q(event_datetime, vector=time_frames, name="QCLOUD")).transpose())
 
+    plt.colorbar()
     plt.show()
 
 
