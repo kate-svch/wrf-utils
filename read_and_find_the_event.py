@@ -18,17 +18,25 @@ import csv
         
 #initial_data = pd.read_csv('/home/kate-svch/wrfmain/kate/reanalysis/2016050400/ar_raw_2016-05-04_60cm_1.csv')
 
-initial_data = pd.read_csv('/home/kate-svch/wrfmain/kate/reanalysis/csv_all/2016-04-26-12_2016-04-29-00_Stand_1_upper_1cm.csv')
+# DEFINE THE TIME INTERVAL HERE
+start_finish_date_str = '2017-10-09-18_2017-10-11-00';
+
+#initial_data = pd.read_csv('/home/kate-svch/wrfmain/kate/reanalysis/csv_all/2016-04-26-12_2016-04-29-00_Stand_1_upper_1cm.csv')
+
+initial_data = pd.read_csv('/home/kate-svch/wrfmain/kate/reanalysis/csv_all/' + start_finish_date_str + '_Stand_1_upper_1cm.csv')
 
 #output_file  = open('/home/kate-svch/wrfmain/kate/reanalysis/datetime_and_01/2016-03-04-12_2016-03-05-12_dt_and_01.csv', "w")
 #writer = csv.writer(output_file, delimiter='', quotechar='"', quoting=csv.QUOTE_ALL)
 #writer = csv.writer(output_file, delimiter=' ')
 
-output_file = '/home/kate-svch/wrfmain/kate/reanalysis/datetime_and_01/2016-04-26-12_2016-04-29-00_dt_and_01.csv'
+output_file = '/home/kate-svch/wrfmain/kate/reanalysis/datetime_and_01/3_set/' + start_finish_date_str + '_dt_and_01.csv'
 
 
 # everything above the threshold we consider being "the flux", everything under it - isn't "the flux"
-threshold_value = 34000;
+threshold_value = 51000;
+
+# the following means that for "initial_moment = 1 min" - new time uniti turns out to be "resulting_moment = 10 min"
+size_of_time_window = 10;
 
 # this line prints the stuff from the file
 #our_little_data.iloc[:]
@@ -39,8 +47,6 @@ whether_there_is_a_flux = [0] * (len(initial_data))
 initial_moments_of_event = 0;
 resulting_moments_of_event = 0;
 
-# the following means that for "initial_moment = 1 min" - new time uniti turns out to be "resulting_moment = 10 min"
-size_of_time_window = 30;
 
 new_length_of_data = len(initial_data) // size_of_time_window;
 
@@ -48,16 +54,42 @@ averaged_data = [0] * (new_length_of_data)
 averaged_whether_there_is_a_flux = [0] * (new_length_of_data)
 
 
+# this averaging will  be performed by obtainig the arithmetical mean
+# let's make an averaged data (from initial_data - for count rate):
+# =============================================================================
+# for new_time_j in range(0, new_length_of_data):
+#     current_averaged_value = 0;
+#     for little_j in range(0, size_of_time_window ):
+#         time_j = new_time_j*size_of_time_window + little_j
+#         averaged_data[new_time_j] = averaged_data[new_time_j] + initial_data.iloc[time_j,1]
+#         #print (whether_there_is_a_flux[time_j])
+#         #print (little_j)
+#     averaged_data[new_time_j] = averaged_data[new_time_j] / size_of_time_window;
+# 
+# # the following makes "whether_there_is_a_flux" from "initial_data.iloc[:, 1]" - withouot any averaging
+# for time_j in range(0, len(initial_data) ):
+#     if (initial_data.iloc[time_j,1] > threshold_value ):
+#         whether_there_is_a_flux[time_j] = 1;
+#         #print (whether_there_is_a_flux[time_j])
+#         initial_moments_of_event = initial_moments_of_event + 1;
+#         
+# # the following makes "averaged_whether_there_is_a_flux" from "averaged_data" - just the result we need
+# for new_time_j in range(0, new_length_of_data ):
+#     if (averaged_data[new_time_j]  > threshold_value ):
+#         averaged_whether_there_is_a_flux[new_time_j] = 1;
+#         #print (whether_there_is_a_flux[time_j])
+#         resulting_moments_of_event = resulting_moments_of_event + 1;       
+# =============================================================================
+
+# the following "averaging" is "nre value is maximum value from the corresponding time interval"
+# =============================================================================
 # let's make an averaged data (from initial_data - for count rate):
 for new_time_j in range(0, new_length_of_data):
     current_averaged_value = 0;
     for little_j in range(0, size_of_time_window ):
         time_j = new_time_j*size_of_time_window + little_j
-        averaged_data[new_time_j] = averaged_data[new_time_j] + initial_data.iloc[time_j,1]
-        #print (whether_there_is_a_flux[time_j])
-        #print (little_j)
-    averaged_data[new_time_j] = averaged_data[new_time_j] / size_of_time_window;
-
+        if (initial_data.iloc[time_j,1] > averaged_data[new_time_j] ):
+            averaged_data[new_time_j] = initial_data.iloc[time_j,1]
 
 # the following makes "whether_there_is_a_flux" from "initial_data.iloc[:, 1]" - withouot any averaging
 for time_j in range(0, len(initial_data) ):
@@ -72,6 +104,8 @@ for new_time_j in range(0, new_length_of_data ):
         averaged_whether_there_is_a_flux[new_time_j] = 1;
         #print (whether_there_is_a_flux[time_j])
         resulting_moments_of_event = resulting_moments_of_event + 1;       
+# =============================================================================
+
 
 
 # here we make an array of datetime-objects for corresponding to "averaged_data" and "averaged_whether_there_is_a_flux" moments
