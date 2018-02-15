@@ -8,7 +8,12 @@ from scipy.io import netcdf
 x_lon = 46  # Index to d02 Aragats point
 y_lat = 46  # Index to d02 Aragats point
 
-model_datetime = datetime.datetime(2016, 11, 30, 6, 0)  # Starting time for WRF modeling
+model_datetime = datetime.datetime(2016, 5, 4, 0, 0)  # Starting time for WRF modeling
+
+
+def set_model_datetime(new_model_datetime):
+    global model_datetime
+    model_datetime = new_model_datetime
 
 
 def get_wrf_file():
@@ -103,7 +108,7 @@ def main():
 def get_index(event_datetime, vector):
     if event_datetime < model_datetime:
         raise Exception("Event datetime is less then modeling")
-    if event_datetime + datetime.timedelta(seconds=600 * vector) > model_datetime + datetime.timedelta(hours=15):
+    if event_datetime + datetime.timedelta(seconds=600 * vector) > model_datetime + datetime.timedelta(hours=35):
         raise Exception("Event datetime is more then modeling")
     time_delta = event_datetime - model_datetime
     return int(time_delta.seconds / 600)
