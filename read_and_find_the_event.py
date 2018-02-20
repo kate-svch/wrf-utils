@@ -15,11 +15,30 @@ import pandas as pd
 import datetime   
 from time import strptime  # it's needed to get month number for a given month name
 import csv
+
+
+import argparse    # we'll get the data of the event, as an argument
+
+parser = argparse.ArgumentParser(description='Great Description To Be Here')
+
+parser.add_argument('--time_start', '-s', action='store', dest='start', help='It is a date-time of the beginning of the event', type=str)
+parser.add_argument('--time_end', '-e', action='store', dest='end', help='It is a date-time of the end of the event', type=str)
+parser.add_argument('--threshold', '-thr', action='store', dest='threshold', help='It is the threshold value for the current set', type=int)
+parser.add_argument('--set-number', '-set', action='store', dest='set', help='It is the number of the set containing current event with the given threshold value', type=int)
+
+args = parser.parse_args()
+
+print("The event under consideration starts at " + args.start)
+print("The event under consideration ends at " + args.end)
+print("The threshold value is " + str(args.threshold))
+print("The number of the set is " + str(args.set))
+
+start_finish_date_str = args.start + '_' + args.end;
         
 #initial_data = pd.read_csv('/home/kate-svch/wrfmain/kate/reanalysis/2016050400/ar_raw_2016-05-04_60cm_1.csv')
 
 # DEFINE THE TIME INTERVAL HERE
-start_finish_date_str = '2017-10-09-18_2017-10-11-00';
+#start_finish_date_str = '2016-05-04-00_2016-05-05-00';
 
 #initial_data = pd.read_csv('/home/kate-svch/wrfmain/kate/reanalysis/csv_all/2016-04-26-12_2016-04-29-00_Stand_1_upper_1cm.csv')
 
@@ -29,11 +48,12 @@ initial_data = pd.read_csv('/home/kate-svch/wrfmain/kate/reanalysis/csv_all/' + 
 #writer = csv.writer(output_file, delimiter='', quotechar='"', quoting=csv.QUOTE_ALL)
 #writer = csv.writer(output_file, delimiter=' ')
 
-output_file = '/home/kate-svch/wrfmain/kate/reanalysis/datetime_and_01/3_set/' + start_finish_date_str + '_dt_and_01.csv'
+output_file = '/home/kate-svch/wrfmain/kate/reanalysis/datetime_and_01/' + str(args.set) + '_set/' + start_finish_date_str + '_dt_and_01.csv'
 
 
 # everything above the threshold we consider being "the flux", everything under it - isn't "the flux"
-threshold_value = 51000;
+#threshold_value = 36000;
+threshold_value = args.threshold;
 
 # the following means that for "initial_moment = 1 min" - new time uniti turns out to be "resulting_moment = 10 min"
 size_of_time_window = 10;
@@ -115,7 +135,7 @@ array_of_datetimes = [0] * (new_length_of_data)
 for new_time_j in range(0, new_length_of_data ):
     time_j = new_time_j*size_of_time_window + size_of_time_window//2;
     time_init_format = initial_data.iloc[time_j,0]
-    year = 2000 + int(time_init_format[7])*10 + int(time_init_format[8])
+    year = 2000 + int(time_init_format[7])*10 + int(time_init_format[8])  # we could use int(time_init_format[7:9]) instead, if we wanted to
     day =  int(time_init_format[0])*10 + int(time_init_format[1])
     month = strptime(time_init_format[3:6],'%b').tm_mon
     hour = int(time_init_format[10])*10 + int(time_init_format[11])
@@ -149,17 +169,36 @@ print('we have ' + str(resulting_moments_of_event*size_of_time_window) + ' "init
  #   print (date_times[time_j])
 
 
-# this line draws the graph: y is values from the second column, x is numbers of the columns
+plt.figure(figsize=(14,8))
 plt.plot(initial_data.iloc[:, 1])
 # here "1" is our chose of the column (the second one), ":" means "take every row"
+plt.title('Particle flux ', fontsize=22)
+plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+plt.ylabel('Count rate', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
 plt.show()
 
-plt.plot(averaged_data)
-plt.show()
+# Additional output: averaged flux and 0-1-results
 
-plt.plot( whether_there_is_a_flux)
-plt.show()
-
-plt.plot( averaged_whether_there_is_a_flux)
-plt.show()
+# =============================================================================
+# plt.figure(figsize=(14,8))
+# plt.plot(averaged_data)
+# plt.title('Averaged article flux, time_window = '+ str(size_of_time_window) + ' min', fontsize=22)
+# plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+# plt.ylabel('Count rate', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+# plt.show()
+# 
+# plt.figure(figsize=(14,8))
+# plt.plot( whether_there_is_a_flux)
+# plt.title('whether_there_is_a_flux, threshold =  '+ str(threshold_value), fontsize=22)
+# plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+# plt.ylabel('0_or_1', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+# plt.show()
+# 
+# plt.figure(figsize=(14,8))
+# plt.plot( averaged_whether_there_is_a_flux)
+# plt.title('averaged_whether_there_is_a_flux ', fontsize=22)
+# plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+# plt.ylabel('0_or_1', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+# plt.show()
+# =============================================================================
 
