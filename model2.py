@@ -9,15 +9,15 @@ x_lon = 45                                                                  # In
 y_lat = 45                                                                  # Index to d02 Aragats point
 
              
-model_datetime = datetime.datetime(2017, 6, 21, 12, 0)               # Starting time for WRF modeling (hour, minute)
+model_datetime = datetime.datetime(2016, 10, 29, 12, 0)               # Starting time for WRF modeling (hour, minute)
 
 
 def get_wrf_file():
- #   base_path = os.getenv('HOME')
+    base_path = os.getenv('HOME')
 
-#    path = os.path.join(base_path, 'wrfmain', 'kate', 'reanalysis')             # path to files
+    path = os.path.join(base_path, 'wrfmain', 'kate', 'reanalysis')             # path to files
 #    path = os.path.join(base_path, 'Thunder', 'Data', 'kate', 'reanalysis') 
-    path = os.path.join('/mnt/data-internal/reanalysis') 
+#    path = os.path.join('/mnt/data-internal/reanalysis') 
     
     # path = os.path.join(base_path, 'wrfmain', 'kate', 'forecast')             # path to files
 

@@ -8,8 +8,9 @@ from scipy.io import netcdf
 import model
 
 
-model_datetime = datetime.datetime(2016, 5, 4, 0, 0)
-model.set_model_datetime(model_datetime)
+model_datetime = datetime.datetime(2016, 3, 4, 12, 0)
+#model_datetime = datetime.datetime(2016, 5, 4, 0, 0)
+model.set_model_datetime(model_datetime, new_model_period = 5)
 
 events = pd.read_csv('testdata.csv', delimiter='     ', names=['date', 'TGE'])
 
