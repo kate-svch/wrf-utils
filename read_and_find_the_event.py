@@ -182,7 +182,7 @@ plt.show()
 # =============================================================================
 # plt.figure(figsize=(14,8))
 # plt.plot(averaged_data)
-# plt.title('Averaged article flux, time_window = '+ str(size_of_time_window) + ' min', fontsize=22)
+# plt.title('Averaged particle flux, time_window = '+ str(size_of_time_window) + ' min', fontsize=22)
 # plt.xlabel('time', fontsize=20, horizontalalignment='right' )
 # plt.ylabel('Count rate', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
 # plt.show()

@@ -7,6 +7,10 @@ import datetime
 from scipy.io import netcdf
 import model2
 
+# it makes the big table with use of file with "time_01" data (made by "read_and_find_the_event.py") and wrf-data (with means of "model2.py")
+
+
+
 import argparse    # we'll get the data of the event, as an argument
 
 parser = argparse.ArgumentParser(description='Great Description To Be Here')
