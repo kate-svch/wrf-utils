@@ -9,6 +9,8 @@ from time import strptime  # it's needed to get month number for a given month n
 import csv
 import model2
 
+
+
 # THE SIZE OF THE TIME WINDOW IS DETERMINED HERE, in the text of program, DIRECTLY!!!
 
 # this is just like "ml_set_creator_local_0.py" and "read_and_find_the_event" together and in a form of functions:
@@ -20,15 +22,27 @@ import model2
 # everything above the threshold we consider being "the flux", everything under it - isn't "the flux"
 # "start" and "end" are strings, "threshold" is an integer
 
-def find_the_event(start, end, threshold):
+def find_the_event(start, end, threshold, short_name_of_detector):
     print("The event under consideration starts at " + start)
     print("The event under consideration ends at " + end)
     print("The threshold value is " + str(threshold))
     
     
     start_finish_date_str = start + '_' + end;
-    initial_data = pd.read_csv('/home/kate-svch/wrfmain/kate/reanalysis/csv_all/' + start_finish_date_str + '_Stand_1_upper_1cm.csv')
-    output_file = '/home/kate-svch/wrfmain/kate/reanalysis/datetime_and_01/current_set/' + start_finish_date_str + '_' + str(threshold) + '_dt_and_01.csv'
+#    name_of_detector = 'Stand_1_upper_1cm'
+    #name_of_detector = 'NaI_2'
+    
+    name_of_detector = 'aaa';
+    
+    if (short_name_of_detector ==  'NaI_2'):
+        name_of_detector = 'NaI_2';
+        
+    if (short_name_of_detector == 'Stand'):
+         name_of_detector = 'Stand_1_upper_1cm'
+         
+
+    initial_data = pd.read_csv('/home/kate-svch/wrfmain/kate/reanalysis/csv_all/' + start_finish_date_str + '_' + name_of_detector + '.csv')
+    output_file = '/home/kate-svch/wrfmain/kate/reanalysis/datetime_and_01/test_tables/' + start_finish_date_str + '_' + str(threshold) + '_dt_and_01.csv'
     # the following means that for "initial_time_unit = 1 min" - new time uniti turns out to be "resulting_time_unit = 10 min"
     size_of_time_window = 10;
     
@@ -46,7 +60,7 @@ def find_the_event(start, end, threshold):
     # =============================================================================
     # let's make an averaged data (from initial_data - for count rate):
     for new_time_j in range(0, new_length_of_data):
-        current_averaged_value = 0;
+#        current_averaged_value = 0;
         for little_j in range(0, size_of_time_window ):
             time_j = new_time_j*size_of_time_window + little_j
             if (initial_data.iloc[time_j,1] > averaged_data[new_time_j] ):
@@ -118,6 +132,9 @@ def add_the_event_to_the_big_table(start, end, threshold, name_of_file):
     print("The event under consideration starts at " + start)
     print("The event under consideration ends at " + end)
     
+    x_lon = 45                                                                  # Index to d02 Aragats point
+    y_lat = 45  
+        
     year = int(start[0:4])
     month = int(start[5:7])
     day =  int(start[8:10])
@@ -126,17 +143,24 @@ def add_the_event_to_the_big_table(start, end, threshold, name_of_file):
     start_finish_date_str = start + '_' + end;
     
     model_datetime = dt_start;
-    model2.set_model_datetime(model_datetime)    
+#    model2.set_model_datetime(model_datetime)    
+    wrf_step_minutes = 5;
+    model_period = datetime.timedelta(minutes = wrf_step_minutes)
+  
+    file = model2.get_wrf_file(model_datetime)
+    variable = file.variables['T2'].data[:]
+    model_length = len(variable[:, y_lat, x_lon])
+    
     
     # this is a file made by the previous function (find_the_event(start, end, threshold)) from this file:- times and 0-1-s
-    events = pd.read_csv('/home/kate-svch/wrfmain/kate/reanalysis/datetime_and_01/current_set/' + start_finish_date_str + '_' + str(threshold) + '_dt_and_01.csv', delimiter='     ', names=['date', 'TGE'])
+    events = pd.read_csv('/home/kate-svch/wrfmain/kate/reanalysis/datetime_and_01/test_tables/' + start_finish_date_str + '_' + str(threshold) + '_dt_and_01.csv', delimiter='     ', names=['date', 'TGE'])
     #events = pd.read_csv('/home/kate-svch/wrfmain/kate/reanalysis/datetime_and_01/current_set/' + start_finish_date_str + '_' + str(threshold) + '_dt_and_01.csv', delimiter='     ')
     events['fulltime'] = pd.to_datetime(events.date, format='%Y-%m-%d %H:%M:%S')
     
     events['t2'] = np.nan
     events['s_wind'] = np.nan
     
-    q_vapor = model2.get_q(model_datetime, name='QVAPOR')
+    q_vapor = model2.get_q(model_datetime, model_period, model_length, model_datetime, name='QVAPOR')
     for i in range(len(q_vapor[0])):
         events['qvapor_'+str(i).zfill(2) ] = np.nan
         events['qsnow_'+str(i).zfill(2) ] = np.nan
@@ -149,20 +173,20 @@ def add_the_event_to_the_big_table(start, end, threshold, name_of_file):
         print (ii)
         date = d.fulltime
          
-        events['t2'].iloc[ii] = model2.get_t2(date)[0]
-        events['s_wind'].iloc[ii] = model2.get_s_wind(date)[0]
+        events['t2'].iloc[ii] = model2.get_t2(model_datetime, model_period, model_length, date)[0]
+        events['s_wind'].iloc[ii] = model2.get_s_wind(model_datetime, model_period, model_length, date)[0]        
         for i in range(len(q_vapor[0])):
-            events['qvapor_'+str(i).zfill(2)].iloc[ii] = model2.get_q(date, name='QVAPOR')[0][i]
-            events['qsnow_'+str(i).zfill(2)].iloc[ii] = model2.get_q(date, name='QSNOW')[0][i]
-            events['qice_'+str(i).zfill(2)].iloc[ii] = model2.get_q(date, name='QICE')[0][i]
-            events['qrain_'+str(i).zfill(2)].iloc[ii] = model2.get_q(date, name='QRAIN')[0][i]
-            events['qgraup_'+str(i).zfill(2)].iloc[ii] = model2.get_q(date, name='QGRAUP')[0][i]
-            events['qcloud_'+str(i).zfill(2)].iloc[ii] = model2.get_q(date, name='QCLOUD')[0][i]
+            events['qvapor_'+str(i).zfill(2)].iloc[ii] = model2.get_q(model_datetime, model_period, model_length,date, name='QVAPOR')[0][i]
+            events['qsnow_'+str(i).zfill(2)].iloc[ii] = model2.get_q(model_datetime, model_period, model_length,date, name='QSNOW')[0][i]
+            events['qice_'+str(i).zfill(2)].iloc[ii] = model2.get_q(model_datetime, model_period, model_length,date, name='QICE')[0][i]
+            events['qrain_'+str(i).zfill(2)].iloc[ii] = model2.get_q(model_datetime, model_period, model_length,date, name='QRAIN')[0][i]
+            events['qgraup_'+str(i).zfill(2)].iloc[ii] = model2.get_q(model_datetime, model_period, model_length,date, name='QGRAUP')[0][i]
+            events['qcloud_'+str(i).zfill(2)].iloc[ii] = model2.get_q(model_datetime, model_period, model_length,date, name='QCLOUD')[0][i]
             print (i)
         
         print(events.head())
     
-    events.to_csv('/home/kate-svch/wrfmain/kate/reanalysis/datetime_and_01/big_tables_for_sets_of_events/' + name_of_file  + '_big_table.csv', mode='a')
+    events.to_csv('/home/kate-svch/wrfmain/kate/reanalysis/datetime_and_01/big_tables_for_separate_events/' + name_of_file  + '_big_table.csv', mode='a')
     
 
 # this test functioni just takes one file as "events" and rewrites it to the other file
@@ -181,7 +205,13 @@ def test_add_the_event(start, end, threshold, name_of_file):
     start_finish_date_str = start + '_' + end;
     
     model_datetime = dt_start;
-    model2.set_model_datetime(model_datetime)
+#    model2.set_model_datetime(model_datetime)    
+    wrf_step_minutes = 5;
+    model_period = datetime.timedelta(minutes = wrf_step_minutes)
+  
+    file = model2.get_wrf_file(model_datetime)
+    variable = file.variables['T2'].data[:]
+    model_length = len(variable[:, y_lat, x_lon])
     
     
     # this is a file made by the previous function (find_the_event(start, end, threshold)) from this file:- times and 0-1-s

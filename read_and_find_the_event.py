@@ -42,7 +42,10 @@ start_finish_date_str = args.start + '_' + args.end;
 
 #initial_data = pd.read_csv('/home/kate-svch/wrfmain/kate/reanalysis/csv_all/2016-04-26-12_2016-04-29-00_Stand_1_upper_1cm.csv')
 
-initial_data = pd.read_csv('/home/kate-svch/wrfmain/kate/reanalysis/csv_all/' + start_finish_date_str + '_Stand_1_upper_1cm.csv')
+name_of_detector = 'Stand_1_upper_1cm'
+#name_of_detector = 'NaI_2'
+
+initial_data = pd.read_csv('/home/kate-svch/wrfmain/kate/reanalysis/csv_all/' + start_finish_date_str + '_' + name_of_detector + '.csv')
 
 #output_file  = open('/home/kate-svch/wrfmain/kate/reanalysis/datetime_and_01/2016-03-04-12_2016-03-05-12_dt_and_01.csv', "w")
 #writer = csv.writer(output_file, delimiter='', quotechar='"', quoting=csv.QUOTE_ALL)
@@ -169,36 +172,52 @@ print('we have ' + str(resulting_moments_of_event*size_of_time_window) + ' "init
  #   print (date_times[time_j])
 
 
+csv_time =  [0] * len(initial_data)
+
+for jj in range (0, len(initial_data)):
+    jj_day =  int(initial_data.iloc[jj, 0][0:2])
+    jj_hour =  int(initial_data.iloc[jj, 0][10:12])
+    jj_minute =  int(initial_data.iloc[jj, 0][13:15])
+    jj_second =  int(initial_data.iloc[jj, 0][16:18])
+    jj_year = int(initial_data.iloc[jj, 0][7:9])
+    jj_month = int(args.start[5:7])
+#    csv_time[jj] = csv_data.iloc[jj, 0][0:15]
+    csv_time[jj]  = datetime.datetime(jj_year, jj_month, jj_day, jj_hour, jj_minute, jj_second)
+
+
+
 plt.figure(figsize=(14,8))
-plt.plot(initial_data.iloc[:, 1])
+plt.plot(csv_time, initial_data.iloc[:, 1])
 # here "1" is our chose of the column (the second one), ":" means "take every row"
-plt.title('Particle flux ', fontsize=22)
+plt.title('Particle flux ' + name_of_detector, fontsize=22)
+plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+plt.ylabel('Count rate', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+plt.locator_params(axis='y', nbins=10)
+plt.locator_params(axis='x', nbins=4)
+plt.xlim(csv_time[0]  , csv_time[-1] )
+plt.show()
+
+
+# Additional output: averaged flux and 0-1-results
+
+plt.figure(figsize=(14,8))
+plt.plot(averaged_data)
+plt.title('Averaged particle flux, time_window = '+ str(size_of_time_window) + ' min', fontsize=22)
 plt.xlabel('time', fontsize=20, horizontalalignment='right' )
 plt.ylabel('Count rate', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
 plt.show()
 
-# Additional output: averaged flux and 0-1-results
+plt.figure(figsize=(14,8))
+plt.plot( whether_there_is_a_flux)
+plt.title('whether_there_is_a_flux, threshold =  '+ str(threshold_value), fontsize=22)
+plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+plt.ylabel('0_or_1', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+plt.show()
 
-# =============================================================================
-# plt.figure(figsize=(14,8))
-# plt.plot(averaged_data)
-# plt.title('Averaged particle flux, time_window = '+ str(size_of_time_window) + ' min', fontsize=22)
-# plt.xlabel('time', fontsize=20, horizontalalignment='right' )
-# plt.ylabel('Count rate', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-# plt.show()
-# 
-# plt.figure(figsize=(14,8))
-# plt.plot( whether_there_is_a_flux)
-# plt.title('whether_there_is_a_flux, threshold =  '+ str(threshold_value), fontsize=22)
-# plt.xlabel('time', fontsize=20, horizontalalignment='right' )
-# plt.ylabel('0_or_1', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-# plt.show()
-# 
-# plt.figure(figsize=(14,8))
-# plt.plot( averaged_whether_there_is_a_flux)
-# plt.title('averaged_whether_there_is_a_flux ', fontsize=22)
-# plt.xlabel('time', fontsize=20, horizontalalignment='right' )
-# plt.ylabel('0_or_1', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-# plt.show()
-# =============================================================================
+plt.figure(figsize=(14,8))
+plt.plot( averaged_whether_there_is_a_flux)
+plt.title('averaged_whether_there_is_a_flux ', fontsize=22)
+plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+plt.ylabel('0_or_1', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+plt.show()
 
