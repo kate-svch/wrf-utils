@@ -23,9 +23,9 @@ y_lat = 45                                                                  # In
 #model_period = None #datetime.timedelta(minutes=5)
 #model_length = None
 
-#current_folder = '/mnt/data-internal/reanalysis'    # this is the folder for the 2018-03-05 event
+current_folder = '/mnt/data-internal/reanalysis'    # this is the folder for the 2018-03-05 event
 
-current_folder = '/mnt/data-internal/newversion'
+#current_folder = '/mnt/data-internal/newversion'
 #current_folder = '/mnt/data-internal/newversion/forecast'
 
 # this function is used in other files        
@@ -58,7 +58,11 @@ def get_height(model_datetime):
      base_geopot = file.variables['PHB'].data[:]
      pert_geopot = file.variables['PH'].data[:]
      height = (base_geopot + pert_geopot) / 9.81
-     return height[0, :, y_lat, x_lon]
+     temp_height = height[0, :, y_lat, x_lon]
+     ground_height = height[0, 0, y_lat, x_lon]
+     for current_index in range (0, len(temp_height)):
+         temp_height[current_index] += -ground_height + 2
+     return temp_height
     
 # it's almost the same as get_height
 # =============================================================================
@@ -99,7 +103,7 @@ def get_t_with_getvar(model_datetime, model_period, model_length, event_datetime
 
 def get_t_profile_in_certain_moment_of_time(model_datetime, model_period, model_length, the_time_moment):
       
-# get quantity of "name" microphysical fracture from 2m to 20 kilometers height : DIFFERENT HEIGHT ANG TIME
+# get quantity of "name" microphysical fracture from 2m to 20 kilometers height : DIFFERENT HEIGHT AND TIME
     global current_folder
     time_index = get_index(model_datetime, model_period, model_length, the_time_moment, 1 )            
     path = os.path.join(current_folder) + '/' 
@@ -148,6 +152,16 @@ def get_wind_ground_level(model_datetime, model_period, model_length, event_date
     v = file.variables['V'].data[:, :, :1, :]
     wind = (u * u + v * v) ** 0.5
     return wind[time_index:time_index + number_of_time_points, 0, y_lat, x_lon]
+
+
+def get_wind_certain_level(model_datetime, model_period, model_length, event_datetime,  z_index, number_of_time_points = 1):
+    time_index = get_index(model_datetime, model_period, model_length, event_datetime, number_of_time_points)
+    file = get_wrf_file(model_datetime)
+    u = file.variables['U'].data[:, :, :, :1]
+    v = file.variables['V'].data[:, :, :1, :]
+    wind = (u * u + v * v) ** 0.5
+    return wind[time_index:time_index + number_of_time_points, z_index, y_lat, x_lon]
+
 
 
 def get_s_pressure(model_datetime, model_period, model_length, event_datetime, number_of_time_points=1):
@@ -276,9 +290,10 @@ def main():
 #     the_time_moment = datetime.datetime(2016, 5, 12, 14, 00)     
 # =============================================================================
     
-    model_datetime = datetime.datetime(2017, 10, 1, 6, 0)
-    event_finish_datetime = datetime.datetime(2017, 10, 2, 12, 0) 
-    the_time_moment = datetime.datetime(2017, 10, 1, 23, 00)  
+    model_datetime = datetime.datetime(2016, 5, 4, 0, 0)
+    event_finish_datetime = datetime.datetime(2016, 5, 5, 0, 0) 
+    the_time_moment = datetime.datetime(2016, 5, 4, 11, 0 )  
+#    the_time_moment = model_datetime
 
 
 
@@ -306,15 +321,10 @@ def main():
    # let's try to determine time and height values properly     
     z_vector = get_height(model_datetime)[:-1]/1000
     time_vector = [event_datetime + datetime.timedelta(minutes=wrf_step_minutes * i) for i in range(number_of_time_points)]    
-
-    #name="QICE"
-    #name="QSNOW"
-    #name="QVAPOR"
-    #name="QRAIN"
-    #name="QGRAUP"
-    #name="QCLOUD"
     
-    name_array = ["QICE", "QSNOW", "QVAPOR", "QRAIN", "QGRAUP", "QCLOUD"]
+    name_array = [ "QICE", "QSNOW", "QVAPOR", "QRAIN", "QGRAUP", "QCLOUD"]
+    
+#    name_array = [ "QNICE", "QICE", "QNRAIN", "QRAIN"]
   
     # the following three lines are the automatical determination of "number_of_time_points"   - the time-length of the data 
 #    file = get_wrf_file()
@@ -328,32 +338,107 @@ def main():
 #     event_time = create_time_array_in_hours(start_hour, event_datetime, number_of_time_points, step, time_point_of_start);
 # =============================================================================
     
+
+
+
+    z_index = 0;   # 12 leads to 5.9 km, 16 - 8 km, 20 - 10.2 km
+    z_chosen_height = z_vector[z_index]
     
-    plt.figure(figsize=(18,8))    
-    plt.title('Temperature in time, ground level' , fontsize=22)
-    plt.xlabel('time', fontsize=20, horizontalalignment='right' )
-    plt.ylabel('T, C', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-    plt.plot(time_vector, get_t2(model_datetime, model_period, model_length, event_datetime, number_of_time_points=number_of_time_points))
-    plt.xlim(event_datetime  , event_datetime + datetime.timedelta(minutes=wrf_step_minutes * (number_of_time_points - 1))  )
-    plt.show()
-      
     plt.figure(figsize=(18,8))
-    picture_t_getvar = plt.contourf(time_vector, z_vector, np.array(get_t_with_getvar(model_datetime, model_period, model_length, event_datetime, number_of_time_points)).transpose())
-    plt.colorbar(picture_t_getvar) 
-    plt.title('Temperature distribution', fontsize=22)
+    plt.title('Wind-speed in time, altitude = ' + str(z_chosen_height) + ' km' + ' (above gr.)', fontsize=22)
     plt.xlabel('time', fontsize=20, horizontalalignment='right' )
-    plt.ylabel('z, km', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-#    plt.axis('image')
-    plt.axis('normal')      
+    plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+    plt.plot(time_vector, get_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points))
+    plt.show()    
+
+
+
+
+
+    z_index = 10;   # 12 leads to 5.9 km, 16 - 8 km, 20 - 10.2 km
+    z_chosen_height = z_vector[z_index]
+    
+    plt.figure(figsize=(18,8))
+    plt.title('Wind-speed in time, altitude = ' + str(z_chosen_height) + ' km' + ' (above gr.)', fontsize=22)
+    plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+    plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+    plt.plot(time_vector, get_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points))
     plt.show()    
     
-        
+    
+    
+    z_index = 14;   # 12 leads to 5.9 km, 16 - 8 km, 20 - 10.2 km
+    z_chosen_height = z_vector[z_index]
+    
     plt.figure(figsize=(18,8))
-    plt.title('Temperature profile' , fontsize=22)
-    plt.xlabel('z, km', fontsize=20, horizontalalignment='right' )
-    plt.ylabel('T, C', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-    plt.plot(z_vector, get_t_profile_in_certain_moment_of_time(model_datetime, model_period, model_length, the_time_moment))
-    plt.show()
+    plt.title('Wind-speed in time, altitude = ' + str(z_chosen_height) + ' km'+ ' (above gr.)' , fontsize=22)
+    plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+    plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+    plt.plot(time_vector, get_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points))
+    plt.show()    
+    
+    
+    z_index = 20;   # 12 leads to 5.9 km, 16 - 8 km, 20 - 10.2 km
+    z_chosen_height = z_vector[z_index]
+    
+    plt.figure(figsize=(18,8))
+    plt.title('Wind-speed in time, altitude = ' + str(z_chosen_height) + ' km' + ' (above gr.)', fontsize=22)
+    plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+    plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+    plt.plot(time_vector, get_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points))
+    plt.show()    
+    
+    
+# =============================================================================
+#     plt.figure(figsize=(18,8))    
+#     plt.title('Temperature in time, ground level' , fontsize=22)
+#     plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+#     plt.ylabel('T, C', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+#     plt.plot(time_vector, get_t2(model_datetime, model_period, model_length, event_datetime, number_of_time_points=number_of_time_points))
+#     plt.xlim(event_datetime  , event_datetime + datetime.timedelta(minutes=wrf_step_minutes * (number_of_time_points - 1))  )
+#     plt.show()
+#       
+#     plt.figure(figsize=(18,8))
+#     picture_t_getvar = plt.contourf(time_vector, z_vector, np.array(get_t_with_getvar(model_datetime, model_period, model_length, event_datetime, number_of_time_points)).transpose())
+#     plt.colorbar(picture_t_getvar) 
+#     plt.title('Temperature distribution', fontsize=22)
+#     plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+#     plt.ylabel('z, km', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+# #    plt.axis('image')
+#     plt.axis('normal')      
+#     plt.show()    
+#     
+#     
+#         plt.figure(figsize=(18,8))
+#     plt.title('Wind-speed in time, ground level' , fontsize=22)
+#     plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+#     plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+#     plt.plot(time_vector, get_wind_ground_level(model_datetime, model_period, model_length, event_datetime, number_of_time_points))
+#     plt.show()
+#     
+#     
+#     plt.figure(figsize=(18,8))
+#     plt.title('Pressure in time, ground level' , fontsize=22)
+#     plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+#     plt.ylabel('kPa', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+#     plt.plot(time_vector, get_s_pressure(model_datetime, model_period, model_length, event_datetime, number_of_time_points))
+#     plt.show()
+# =============================================================================
+    
+    
+       
+    
+    
+# =============================================================================
+#     plt.figure(figsize=(18,8))
+#     plt.title('Temperature profile' , fontsize=22)
+#     plt.xlabel('z, km', fontsize=20, horizontalalignment='right' )
+#     plt.ylabel('T, C', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+#     plt.plot(z_vector, get_t_profile_in_certain_moment_of_time(model_datetime, model_period, model_length, the_time_moment))
+#     plt.show()
+# =============================================================================
+       
+    
         
 # =============================================================================
 #     plt.figure(figsize=(18,8))
@@ -363,38 +448,33 @@ def main():
 #     plt.plot(get_alt(event_datetime,time_point_of_start, number_of_time_points))
 #     plt.show()
 # =============================================================================
-        
-    
-    plt.figure(figsize=(18,8))
-    plt.title('Wind-speed in time, ground level' , fontsize=22)
-    plt.xlabel('time', fontsize=20, horizontalalignment='right' )
-    plt.ylabel('speed', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-    plt.plot(time_vector, get_wind_ground_level(model_datetime, model_period, model_length, event_datetime, number_of_time_points))
-    plt.show()
     
     
-    plt.figure(figsize=(18,8))
-    plt.title('Pressure in time, ground level' , fontsize=22)
-    plt.xlabel('time', fontsize=20, horizontalalignment='right' )
-    plt.ylabel('kPa', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-    plt.plot(time_vector, get_s_pressure(model_datetime, model_period, model_length, event_datetime, number_of_time_points))
-    plt.show()
-
-       
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     for name in name_array:
         
-        plt.figure(figsize=(18,8))
-        plt.title(name + ' profile in certain moment of time' , fontsize=22)
-        plt.xlabel('z, km', fontsize=20, horizontalalignment='right' )
-        plt.ylabel(name, rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-        plt.plot(z_vector, get_q_profile_in_certain_moment_of_time(model_datetime, model_period, model_length, the_time_moment, name))
-        plt.show()
+# =============================================================================
+#         plt.figure(figsize=(18,8))
+#         plt.title(name + ' profile in certain moment of time' , fontsize=22)
+#         plt.xlabel('z, km', fontsize=20, horizontalalignment='right' )
+#         plt.ylabel(name, rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+#         plt.plot(z_vector, get_q_profile_in_certain_moment_of_time(model_datetime, model_period, model_length, the_time_moment, name))
+#         plt.show()
+# =============================================================================
     
         plt.figure(figsize=(18,8))
         picture_mass = plt.contourf(time_vector, z_vector, np.array(get_q(model_datetime, model_period, model_length, event_datetime, name, number_of_time_points)).transpose())   
         plt.colorbar(picture_mass) 
-        plt.title('Mass density of '+ name, fontsize=22)
+        plt.title('Density: '+ name, fontsize=22)
         plt.xlabel('time', fontsize=20, horizontalalignment='right' )
         plt.ylabel('z, km', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
     #    plt.axis('image')
@@ -410,7 +490,7 @@ def main():
         
         picture2 =  plt.contourf(x_values, z_vector, np.array(   get_q_xz(model_datetime, model_period, model_length, the_time_moment, name )).transpose())       
         plt.colorbar(picture2) 
-        plt.title('Mass density of '+ name + '  '+ str(the_time_moment), fontsize=22)
+        plt.title('Density: '+ name + '  '+ str(the_time_moment), fontsize=22)
         plt.xlabel('x, km', fontsize=20, horizontalalignment='right' )
         plt.ylabel('z, km', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
         plt.axis('normal')    
@@ -428,19 +508,37 @@ def main():
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
  # let's draw the sum of fields, created by two kinds of cloud-particles
-    name1 = "QCLOUD"
-    name2 = "QGRAUP"
-    charge1 = -3*10**(-1);
-    charge2 = 2.2*10**(0);
-    plt.figure(figsize=(14,8)) 
-    sum_of_fields = np.array(el_field_q_int_z_t(model_datetime, model_period, model_length, event_datetime, name1, charge1, number_of_time_points)) + np.array(el_field_q_int_z_t(model_datetime, model_period, model_length, event_datetime, name2, charge2, number_of_time_points))
-    plt.plot(time_vector, sum_of_fields)
-    plt.title('Electric field created by '+ name1 + ' and ' + name2, fontsize=22)
-    plt.xlabel('time', fontsize=20, horizontalalignment='right' )
-    plt.ylabel('El_field, some_unit', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-    plt.xlim(time_vector[0], time_vector[-1] )    
-    plt.show()
+# =============================================================================
+#     name1 = "QCLOUD"
+#     name2 = "QGRAUP"
+#     charge1 = -3*10**(-1);
+#     charge2 = 2.2*10**(0);
+#     plt.figure(figsize=(14,8)) 
+#     sum_of_fields = np.array(el_field_q_int_z_t(model_datetime, model_period, model_length, event_datetime, name1, charge1, number_of_time_points)) + np.array(el_field_q_int_z_t(model_datetime, model_period, model_length, event_datetime, name2, charge2, number_of_time_points))
+#     plt.plot(time_vector, sum_of_fields)
+#     plt.title('Electric field created by '+ name1 + ' and ' + name2, fontsize=22)
+#     plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+#     plt.ylabel('El_field, some_unit', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+#     plt.xlim(time_vector[0], time_vector[-1] )    
+#     plt.show()
+# =============================================================================
 
 
 def get_index(model_datetime, model_period, model_length, event_datetime, vector):        # in what follows "vector" is called "number of time points"
