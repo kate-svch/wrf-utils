@@ -29,7 +29,7 @@ data=data.reset_index(drop=True)
 target=data['TGE']      
 #nnlls=data['nnlls']
 
-#del data['t2']
+del data['t2']
 #del data['s_wind']
 del data['date']
 del data['TGE']
@@ -71,7 +71,9 @@ for train_index, test_index in kf:
     matrix += confusion_matrix(y_test, predict)
     print (f1)
 
-print (pd.DataFrame((coefs/folds)/np.max(np.abs(coefs/folds))))
+
+print (pd.DataFrame((coefs/folds)/np.max(np.abs(coefs/folds))).loc[0,:])
+#print (data.loc[119, :])
 print ('accur', accur/folds)
 print ('recall', recall/folds)
 print ('f1', f1/folds)
