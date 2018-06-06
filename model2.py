@@ -314,11 +314,10 @@ def main():
 #     event_finish_datetime = datetime.datetime(2016, 5, 13, 0, 00)   
 #     the_time_moment = datetime.datetime(2016, 5, 12, 14, 00)     
 # =============================================================================
-    
 
-    model_datetime = datetime.datetime(2016, 6, 11, 0, 0)
-    event_finish_datetime = datetime.datetime(2016, 6, 12, 00, 0) 
-    the_time_moment = datetime.datetime(2016, 6, 11, 16,  30 )   
+    model_datetime = datetime.datetime(2016, 4, 26, 12, 0)
+    event_finish_datetime = datetime.datetime(2016, 4, 29, 00, 0) 
+    the_time_moment = datetime.datetime(2016, 4, 28, 2,  00 )   
 
     z_index_max = 20;   # it's the maximal index of height: 20 corresponds to approximately  10.2 km
 

@@ -17,6 +17,8 @@ import datetime
 from math import ceil        # rounding up  ^_^
 from time import strptime  # it's needed to get month number for a given month name
 
+import matplotlib.ticker as ticker
+
 import model2
 
 x_lon = 45;   y_lat = 45;   
@@ -52,13 +54,12 @@ def dewpoint_in_time(model_datetime, model_period, model_length, event_datetime,
     return t_dewpoint[time_index : time_index + number_of_time_points, 0, y_lat, x_lon]
 
 
-def cloud_base_height_from_temperature_and_dp_profiles(model_datetime, model_period, model_length, the_time_moment, z_vector):
-    
-    temperature = model2.get_t_profile_in_certain_moment_of_time(model_datetime, model_period, model_length, the_time_moment)
+def cloud_base_height_from_temperature_and_dp_profiles(model_datetime, model_period, model_length, the_time_moment, z_vector):    
+    temperature = model2.get_t_profile_in_certain_moment_of_time(40, model_datetime, model_period, model_length, the_time_moment)
     t_dp = get_dewpoint_t_profile_in_certain_moment_of_time(model_datetime, model_period, model_length, the_time_moment)
     initial_signum = (temperature[0] < t_dp[0])    
     for j_in_z in range(1, len(t_dp)):
-        signum = (temperature[j_in_z] < t_dp[j_in_z])
+        signum = (temperature[j_in_z] <= t_dp[j_in_z])
         if signum != initial_signum : return (z_vector[j_in_z - 1])
     return (-2);
 
@@ -91,16 +92,16 @@ def main():
     model_period = datetime.timedelta(minutes = wrf_step_minutes)
 #model2.set_model_datetime(datetime.datetime(2018, 3, 4, 18, 0) , wrf_step_minutes)        # the second argument is the value of time step, in minutes
 
-    model_datetime = datetime.datetime(2017, 10, 1, 6, 0)
-    event_finish_datetime = datetime.datetime(2017, 10, 2, 12, 0) 
-    the_time_moment = datetime.datetime(2017, 10, 1, 23, 00)       
+    start_date_str = '2016-04-26-12-00';       # this is time of start of the event, so EVERYWHERE BELOW "time_point_of_start = 0" !!!
+    model_datetime = datetime.datetime(2016, 4, 26, 12, 0)
+    event_finish_datetime = datetime.datetime(2016, 4, 29, 00, 0) 
+    the_time_moment = datetime.datetime(2016, 4, 28, 2,  00 )    
   
 
     file = model2.get_wrf_file(model_datetime)
     variable = file.variables['T2'].data[:]
     model_length = len(variable[:, y_lat, x_lon])
     
-    start_date_str = '2017-10-01-06-00';       # this is time of start of the event, so EVERYWHERE BELOW "time_point_of_start = 0" !!!
     event_datetime = datetime.datetime(int(start_date_str[0:4]), int(start_date_str[5:7]), int(start_date_str[8:10]), int(start_date_str[11:13]), int(start_date_str[14:16]))  
     csv_folder = '/home/kate-svch/wrfmain/kate/reanalysis/csv_measurements/' + start_date_str + '/';
     
@@ -122,17 +123,34 @@ def main():
 #     plt.show()
 # =============================================================================
     
+    
+    cloud_base_estim_for_the_moment = 0.125*(model2.get_t2(model_datetime, model_period, model_length, the_time_moment,  1) - dewpoint_in_time(model_datetime, model_period, model_length, the_time_moment, 1 ))    
+# =============================================================================
+#     print('AAAAAAAAAAAAAAA!')
+#     print ('The value of cloud-height, estimated with use of temperature profiles, is ', cloud_base_height_from_temperature_and_dp_profiles(model_datetime, model_period, model_length, the_time_moment, z_vector), ' km.')
+#     print ('The value of cloud-height, estimated with use of ground values only, is ', cloud_base_estim_for_the_moment, ' km')
+# =============================================================================
+
+    
+    
+    
+    
+    ourlongstring = 'The value of cloud-height, estimated with use of temperature profiles, is ' + str( cloud_base_height_from_temperature_and_dp_profiles(model_datetime, model_period, model_length, the_time_moment, z_vector)) +  ' km.'
+    ourlongstring += '  ' + 'The value of cloud-height, estimated with use of ground values only, is ' + str( cloud_base_estim_for_the_moment) + ' km'
+
+    
+    shortstr = 'fine_estim ' + str( cloud_base_height_from_temperature_and_dp_profiles(model_datetime, model_period, model_length, the_time_moment, z_vector)) +  ' km.'
+    shortstr += '  ' + 'rough_estim ' + str( cloud_base_estim_for_the_moment) + ' km'
+        
     plt.figure(figsize=(18,8))
-    plt.title('Temperature and dewpoint profiles' , fontsize=22)
+    plt.title('Temperature and dewpoint profiles ' + ', '+ str(the_time_moment)  + '   ' + shortstr, fontsize=22)
     plt.xlabel('z, km', fontsize=20, horizontalalignment='right' )
     plt.ylabel('T, C', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-    plt.plot(z_vector, model2.get_t_profile_in_certain_moment_of_time(model_datetime, model_period, model_length, the_time_moment ), label = 'T')
+    plt.plot(z_vector, model2.get_t_profile_in_certain_moment_of_time(40, model_datetime, model_period, model_length, the_time_moment ), label = 'T')
     plt.plot(z_vector, get_dewpoint_t_profile_in_certain_moment_of_time (model_datetime, model_period, model_length, the_time_moment), label = 'Td')
     plt.legend(fontsize=20,loc=1)
     plt.show()
     
-    print ('The value of cloud-height, estimated with use of temperature profiles, is ', cloud_base_height_from_temperature_and_dp_profiles(model_datetime, model_period, model_length, the_time_moment, z_vector), ' km.')
-        
     plt.figure(figsize=(18,8))
     plt.title('Dewpoint-temperature, ground level' , fontsize=22)
     plt.xlabel('time', fontsize=20, horizontalalignment='right' )
@@ -169,14 +187,14 @@ def main():
     
     
     
-    plt.figure(figsize=(14,8))
+    aaa = plt.figure(figsize=(14,8))
     # this line draws the graph: y is values from the second column, x is numbers of the columns
     plt.plot(csv_time, csv_data.iloc[:, 1])
     # here "1" is our chose of the column (the second one), ":" means "take every row"
     plt.title(name_of_value+ ' csv', fontsize=22)
     plt.xlabel('time', fontsize=20, horizontalalignment='right' )
     plt.ylabel('T, C', rotation='horizontal', fontsize=24, horizontalalignment='right', verticalalignment='top')
-    plt.locator_params(axis='y', nbins=10)
+    plt.locator_params(axis='y', nbins=2)
     plt.locator_params(axis='x', nbins=4)
     plt.show()
     
@@ -232,8 +250,16 @@ def main():
     plt.legend(fontsize=20,loc=1)
     plt.show()
     
+    
+    
+    
+    
+    
+    
+    
+   
 
-#  THIS SHOULD BE TUNED    
+#  IT DOES NOT WORK!!    
 # =============================================================================
 #     plt.figure(figsize=(18,8))
 #     plt.title('Cloud-base height' , fontsize=22)

@@ -28,7 +28,12 @@ x_lon = 45;  y_lat = 45;
                                                              
 #start_date_str = '2018-03-05-01-30';    # this is time of start of the event, so EVERYWHERE "time_point_of_start = 0" !!!
 
-start_date_str = '2017-10-01-06-00'; 
+start_date_str = '2016-04-26-12-00'; 
+
+model_datetime = datetime.datetime(2016, 4, 26, 12, 0)
+event_finish_datetime = datetime.datetime(2016, 4, 29, 00, 0) 
+the_time_moment = datetime.datetime(2016, 4, 28, 2,  00 )   
+
 event_datetime = datetime.datetime(int(start_date_str[0:4]), int(start_date_str[5:7]), int(start_date_str[8:10]), int(start_date_str[11:13]), int(start_date_str[14:16]))  
 
 csv_folder = '/home/kate-svch/wrfmain/kate/reanalysis/csv_measurements/' + start_date_str + '/';
@@ -40,11 +45,6 @@ wrf_step_minutes = 5;
 #model2.set_model_datetime(datetime.datetime(2018, 3, 4, 18, 0) , wrf_step_minutes)        # the second argument is the value of time step, in minutes
 
 model_period = datetime.timedelta(minutes = wrf_step_minutes)
-
-model_datetime = datetime.datetime(2017, 10, 1, 6, 0)
-event_finish_datetime = datetime.datetime(2017, 10, 2, 12, 0) 
-the_time_moment = datetime.datetime(2017, 10, 1, 23, 00)  
-
 
 file = model2.get_wrf_file(model_datetime)
 variable = file.variables['T2'].data[:]
