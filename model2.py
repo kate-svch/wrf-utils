@@ -351,13 +351,11 @@ def main():
 # =============================================================================
 
 
-    model_datetime = datetime.datetime(2016, 6, 11, 0, 0)
-    event_finish_datetime = datetime.datetime(2016, 6, 12, 0, 0)
-    the_time_moment = datetime.datetime(2016, 6, 11, 10, 0)
+    model_datetime = datetime.datetime(2016, 10, 29, 0, 0)
+    event_finish_datetime = datetime.datetime(2016, 10, 30, 12, 0)
+    the_time_moment = datetime.datetime(2016, 10, 29, 7, 0)
     
-    
-   
-    
+    the_second_time_moment = datetime.datetime(2016, 10, 29, 22, 10)
 
     z_index_max = 20;   # it's the maximal index of height: 20 corresponds to approximately  10.2 km
 
@@ -397,10 +395,11 @@ def main():
     time_vector = [event_datetime + datetime.timedelta(minutes=wrf_step_minutes * i) for i in range(number_of_time_points)]    
     
     name_array = [ "QICE", "QSNOW", "QVAPOR", "QRAIN", "QGRAUP", "QCLOUD"]
-    height_for_wind_indexes_array = [0, 8, 9, 11, 12, 15, 16, 17, 18, 19]
+    height_for_wind_indexes_array = [0, 3, 4, 5, 9, 10, 11, 13]
 
     aux_speed_height_number = 10;
     time_of_event_for_wind_array = [the_time_moment]*(aux_speed_height_number + 1);  
+    the_second_time_of_event_for_wind_array = [the_second_time_moment]*(aux_speed_height_number + 1);  
 
 
   
@@ -430,6 +429,7 @@ def main():
         plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
         plt.plot(time_vector, array_from_get_wind )
         plt.plot(time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number))
+        plt.plot(the_second_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number))
         plt.show()    
         
         array_from_get_wind =  get_ew_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points)
@@ -439,6 +439,7 @@ def main():
         plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
         plt.plot(time_vector, array_from_get_wind )
         plt.plot(time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number))
+        plt.plot(the_second_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number))
         plt.show()   
         
         array_from_get_wind = get_ns_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points)
@@ -448,6 +449,7 @@ def main():
         plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
         plt.plot(time_vector, array_from_get_wind )
         plt.plot(time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number))
+        plt.plot(the_second_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number))
         plt.show()   
         
         array_from_get_wind = get_vertical_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points)
@@ -457,6 +459,7 @@ def main():
         plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
         plt.plot(time_vector, array_from_get_wind ) 
         plt.plot(time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number))
+        plt.plot(the_second_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number))
         plt.show()   
 
 # =============================================================================
