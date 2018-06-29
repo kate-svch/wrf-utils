@@ -148,8 +148,8 @@ def get_s_wind(model_datetime, model_period, model_length, event_datetime, time_
 def get_wind(model_datetime, model_period, model_length, event_datetime,  number_of_time_points = 1):
     time_index = get_index(model_datetime, model_period, model_length, event_datetime, number_of_time_points)
     file = get_wrf_file(model_datetime)
-    u = file.variables['U'].data[:, :, :, :1]
-    v = file.variables['V'].data[:, :, :1, :]
+    u = file.variables['U'].data[:, :, :, :-1]
+    v = file.variables['V'].data[:, :, :-1, :]
     wind = (u * u + v * v) ** 0.5
     return wind[time_index:time_index + number_of_time_points, :, y_lat, x_lon]
 
@@ -157,8 +157,8 @@ def get_wind(model_datetime, model_period, model_length, event_datetime,  number
 def get_wind_ground_level(model_datetime, model_period, model_length, event_datetime,  number_of_time_points = 1):
     time_index = get_index(model_datetime, model_period, model_length, event_datetime, number_of_time_points)
     file = get_wrf_file(model_datetime)
-    u = file.variables['U'].data[:, :, :, :1]
-    v = file.variables['V'].data[:, :, :1, :]
+    u = file.variables['U'].data[:, :, :, :-1]
+    v = file.variables['V'].data[:, :, :-1, :]
     wind = (u * u + v * v) ** 0.5
     return wind[time_index:time_index + number_of_time_points, 0, y_lat, x_lon]
 
@@ -166,11 +166,46 @@ def get_wind_ground_level(model_datetime, model_period, model_length, event_date
 def get_wind_certain_level(model_datetime, model_period, model_length, event_datetime,  z_index, number_of_time_points = 1):
     time_index = get_index(model_datetime, model_period, model_length, event_datetime, number_of_time_points)
     file = get_wrf_file(model_datetime)
-    u = file.variables['U'].data[:, :, :, :1]
-    v = file.variables['V'].data[:, :, :1, :]
+    u = file.variables['U'].data[:, :, :, :-1]    #(size: model_length, z_index, y_lat, x_lon)
+    v = file.variables['V'].data[:, :, :-1, :]
     wind = (u * u + v * v) ** 0.5
     return wind[time_index:time_index + number_of_time_points, z_index, y_lat, x_lon]
 
+def get_min_and_max_array_item_value(our_array):
+    current_max = current_min = our_array[0]
+    for index_jj in range(1, len(our_array)):
+        if (our_array[index_jj] > current_max):
+            current_max = our_array[index_jj]
+        if (our_array[index_jj] < current_min):
+            current_min = our_array[index_jj]    
+    return [current_min, current_max];
+
+def get_aux_speed_array(array_from_get_wind, aux_speed_height_number):
+    min = get_min_and_max_array_item_value(array_from_get_wind)[0];  
+    max = get_min_and_max_array_item_value(array_from_get_wind)[1];  
+    aux_speed_array = [];
+    for jj in range (0, aux_speed_height_number + 1):
+         aux_speed_array.append( min + jj*( (max - min) /aux_speed_height_number) )
+    return aux_speed_array
+
+
+def get_ew_wind_certain_level(model_datetime, model_period, model_length, event_datetime,  z_index, number_of_time_points = 1):
+    time_index = get_index(model_datetime, model_period, model_length, event_datetime, number_of_time_points)
+    file = get_wrf_file(model_datetime)
+    u = file.variables['U'].data[:, :, :, :-1] 
+    return u[time_index:time_index + number_of_time_points, z_index, y_lat, x_lon]
+
+def get_ns_wind_certain_level(model_datetime, model_period, model_length, event_datetime,  z_index, number_of_time_points = 1):
+    time_index = get_index(model_datetime, model_period, model_length, event_datetime, number_of_time_points)
+    file = get_wrf_file(model_datetime)
+    v = file.variables['V'].data[:, :, :-1, :]
+    return v[time_index:time_index + number_of_time_points, z_index, y_lat, x_lon]
+
+def get_vertical_wind_certain_level(model_datetime, model_period, model_length, event_datetime,  z_index, number_of_time_points = 1):
+    time_index = get_index(model_datetime, model_period, model_length, event_datetime, number_of_time_points)
+    file = get_wrf_file(model_datetime)
+    w_wind = file.variables['W'].data[:, :, :, :-1]
+    return w_wind[time_index:time_index + number_of_time_points, z_index, y_lat, x_lon]
 
 
 def get_s_pressure(model_datetime, model_period, model_length, event_datetime, number_of_time_points=1):
@@ -315,9 +350,10 @@ def main():
 #     the_time_moment = datetime.datetime(2016, 5, 12, 14, 00)     
 # =============================================================================
 
-    model_datetime = datetime.datetime(2016, 4, 26, 12, 0)
-    event_finish_datetime = datetime.datetime(2016, 4, 29, 00, 0) 
-    the_time_moment = datetime.datetime(2016, 4, 28, 2,  00 )   
+
+    model_datetime = datetime.datetime(2017, 10, 10, 6, 0)
+    event_finish_datetime = datetime.datetime(2017, 10, 11, 0, 0)
+    the_time_moment = datetime.datetime(2017, 10, 10, 20, 15)
 
     z_index_max = 20;   # it's the maximal index of height: 20 corresponds to approximately  10.2 km
 
@@ -357,8 +393,12 @@ def main():
     time_vector = [event_datetime + datetime.timedelta(minutes=wrf_step_minutes * i) for i in range(number_of_time_points)]    
     
     name_array = [ "QICE", "QSNOW", "QVAPOR", "QRAIN", "QGRAUP", "QCLOUD"]
-    
-#    name_array = [ "QNICE", "QICE", "QNRAIN", "QRAIN"]
+
+    aux_speed_height_number = 10;
+    time_of_event_for_wind_array = [the_time_moment]*(aux_speed_height_number + 1);  
+
+
+
   
     # the following three lines are the automatical determination of "number_of_time_points"   - the time-length of the data 
 #    file = get_wrf_file()
@@ -378,12 +418,48 @@ def main():
     z_index = 0;   # 12 leads to 5.9 km, 16 - 8 km, 20 - 10.2 km
     z_chosen_height = z_vector[z_index]
     
+                 
+# =============================================================================
+#     time_of_event_for_wind_array = [];
+#     for jj in range (0, len(get_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points))):
+#         time_of_event_for_wind_array.append(jj)
+# =============================================================================
+
+    array_from_get_wind = get_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points)
     plt.figure(figsize=(18,8))
-    plt.title('Wind-speed in time, altitude = ' + str(z_chosen_height) + ' km' + ' (above gr.)', fontsize=22)
+    plt.title('Horizontal Wind-speed in time, altitude = ' + str(z_chosen_height) + ' km' + ' (above gr.)', fontsize=22)
     plt.xlabel('time', fontsize=20, horizontalalignment='right' )
     plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-    plt.plot(time_vector, get_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points))
+    plt.plot(time_vector, array_from_get_wind )
+    plt.plot(time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number))
     plt.show()    
+    
+    array_from_get_wind =  get_ew_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points)
+    plt.figure(figsize=(18,8))
+    plt.title('East-West Wind-speed in time, altitude = ' + str(z_chosen_height) + ' km' + ' (above gr.)', fontsize=22)
+    plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+    plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+    plt.plot(time_vector, array_from_get_wind )
+    plt.plot(time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number))
+    plt.show()   
+    
+    array_from_get_wind = get_ns_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points)
+    plt.figure(figsize=(18,8))
+    plt.title('North-South Wind-speed in time, altitude = ' + str(z_chosen_height) + ' km' + ' (above gr.)', fontsize=22)
+    plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+    plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+    plt.plot(time_vector, array_from_get_wind )
+    plt.plot(time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number))
+    plt.show()   
+    
+    array_from_get_wind = get_vertical_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points)
+    plt.figure(figsize=(18,8))
+    plt.title('Vertical Wind-speed in time, altitude = ' + str(z_chosen_height) + ' km' + ' (above gr.)', fontsize=22)
+    plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+    plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+    plt.plot(time_vector, array_from_get_wind ) 
+    plt.plot(time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number))
+    plt.show()   
 
 # =============================================================================
 #     z_index = 7;   # 12 leads to 5.9 km, 16 - 8 km, 20 - 10.2 km
@@ -396,48 +472,6 @@ def main():
 #     plt.plot(time_vector, get_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points))
 #     plt.show()  
 # 
-#     z_index = 11;   # 12 leads to 5.9 km, 16 - 8 km, 20 - 10.2 km
-#     z_chosen_height = z_vector[z_index]
-#     
-#     plt.figure(figsize=(18,8))
-#     plt.title('Wind-speed in time, altitude = ' + str(z_chosen_height) + ' km' + ' (above gr.)', fontsize=22)
-#     plt.xlabel('time', fontsize=20, horizontalalignment='right' )
-#     plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-#     plt.plot(time_vector, get_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points))
-#     plt.show()  
-#     
-#     
-#     
-#     z_index = 12   # 12 leads to 5.9 km, 16 - 8 km, 20 - 10.2 km
-#     z_chosen_height = z_vector[z_index]
-#     
-#     plt.figure(figsize=(18,8))
-#     plt.title('Wind-speed in time, altitude = ' + str(z_chosen_height) + ' km' + ' (above gr.)', fontsize=22)
-#     plt.xlabel('time', fontsize=20, horizontalalignment='right' )
-#     plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-#     plt.plot(time_vector, get_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points))
-#     plt.show()  
-#     
-#     
-#     z_index = 14   # 12 leads to 5.9 km, 16 - 8 km, 20 - 10.2 km
-#     z_chosen_height = z_vector[z_index]
-#     
-#     plt.figure(figsize=(18,8))
-#     plt.title('Wind-speed in time, altitude = ' + str(z_chosen_height) + ' km' + ' (above gr.)', fontsize=22)
-#     plt.xlabel('time', fontsize=20, horizontalalignment='right' )
-#     plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-#     plt.plot(time_vector, get_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points))
-#     plt.show()  
-# 
-#     z_index = 16   # 12 leads to 5.9 km, 16 - 8 km, 20 - 10.2 km
-#     z_chosen_height = z_vector[z_index]
-#     
-#     plt.figure(figsize=(18,8))
-#     plt.title('Wind-speed in time, altitude = ' + str(z_chosen_height) + ' km' + ' (above gr.)', fontsize=22)
-#     plt.xlabel('time', fontsize=20, horizontalalignment='right' )
-#     plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-#     plt.plot(time_vector, get_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points))
-#     plt.show()  
 # =============================================================================
 
     
