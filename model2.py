@@ -58,12 +58,13 @@ def get_wrf_file(model_datetime):
 #  number_of_time_points - it's the number of points in the time interval
  
     
-def get_height(model_datetime):
+def get_height(model_datetime, x_here):
      file = get_wrf_file(model_datetime)
      base_geopot = file.variables['PHB'].data[:]
      pert_geopot = file.variables['PH'].data[:]
      height = (base_geopot + pert_geopot) / 9.81
-     temp_height = height[0, :, y_lat, x_lon]
+     temp_height = height[0, :, y_lat, x_here]
+     # "ground_height" is the minimal considered value of the altitude: it defines "zero-value" of "z"  (in metres)
      ground_height = height[0, 0, y_lat, x_lon]
      for current_index in range (0, len(temp_height)):
          temp_height[current_index] += -ground_height + 2
@@ -171,21 +172,13 @@ def get_wind_certain_level(model_datetime, model_period, model_length, event_dat
     wind = (u * u + v * v) ** 0.5
     return wind[time_index:time_index + number_of_time_points, z_index, y_lat, x_lon]
 
-def get_min_and_max_array_item_value(our_array):
-    current_max = current_min = our_array[0]
-    for index_jj in range(1, len(our_array)):
-        if (our_array[index_jj] > current_max):
-            current_max = our_array[index_jj]
-        if (our_array[index_jj] < current_min):
-            current_min = our_array[index_jj]    
-    return [current_min, current_max];
 
 def get_aux_speed_array(array_from_get_wind, aux_speed_height_number):
-    min = get_min_and_max_array_item_value(array_from_get_wind)[0];  
-    max = get_min_and_max_array_item_value(array_from_get_wind)[1];  
+    min_v = min(array_from_get_wind)
+    max_v = max(array_from_get_wind)
     aux_speed_array = [];
     for jj in range (0, aux_speed_height_number + 1):
-         aux_speed_array.append( min + jj*( (max - min) /aux_speed_height_number) )
+         aux_speed_array.append( min_v + jj*( (max_v - min_v) /aux_speed_height_number) )
     return aux_speed_array
 
 
@@ -280,7 +273,7 @@ def el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, 
     file = get_wrf_file(model_datetime)
     vapor = file.variables[name].data[:] / 1      
 #    z_vector = get_height(model_datetime)[0:-1]  
-    z_vector = get_height(model_datetime)[0:z_index_max]             # "z_vector" outside this funciton is height-values in "km", here - in "m"
+    z_vector = get_height(model_datetime, x_lon)[0:z_index_max]             # "z_vector" outside this funciton is height-values in "km", here - in "m"
     # vapor_tz = vapor[:, :, y_lat, x_lon]
     vapor_tz = vapor[time_index : time_index  + number_of_time_points, :, y_lat, x_lon]
  
@@ -353,18 +346,28 @@ def main():
 
     model_datetime = datetime.datetime(2016, 10, 29, 0, 0)
     event_finish_datetime = datetime.datetime(2016, 10, 30, 12, 0)
-    the_time_moment = datetime.datetime(2016, 10, 29, 7, 0)
-    
-    the_second_time_moment = datetime.datetime(2016, 10, 29, 22, 10)
 
-    z_index_max = 20;   # it's the maximal index of height: 20 corresponds to approximately  10.2 km
+    the_time_moment = datetime.datetime(2016, 10, 29, 18, 30) 
+    the_second_time_moment = datetime.datetime(2016, 10, 29, 22, 0) 
+    the_third_time_moment = datetime.datetime(2017, 9, 29, 18, 50)  
+    the_fourth_time_moment = datetime.datetime(2017, 9, 29, 18, 50) 
+
+
+ #   the_second_time_moment  = the_time_moment
+    the_third_time_moment=  the_time_moment
+    the_fourth_time_moment =  the_time_moment
 
 # =============================================================================
 #     model_datetime = datetime.datetime(2017, 9, 29, 6, 0)
-#     event_finish_datetime = datetime.datetime(2017, 9, 30, 00, 0) 
-#     the_time_moment = datetime.datetime(2017, 9, 29, 22,  5 )   
+#     event_finish_datetime = datetime.datetime(2017, 9, 30, 0, 0)
+# #    the_time_moment = datetime.datetime(2017, 9, 29, 18, 50) 
+#     the_time_moment = datetime.datetime(2017, 9, 29, 19, 35)   
+#     the_second_time_moment = datetime.datetime(2017, 9, 29, 20, 10)
 # =============================================================================
-#    the_time_moment = model_datetime
+    
+          
+
+    z_index_max = 20;   # it's the maximal index of height: 20 corresponds to approximately  10.2 km
 
 
 
@@ -383,24 +386,27 @@ def main():
 #    number_of_time_points = 25; 
 
     charge = 0.5*10**(-6);     
-
-    x_values = [0] * 90
-    for j_x in range(0, len(x_values) ):
-        x_values[j_x] = (j_x - 45)
+    z_array = np.zeros([90,z_index_max])
+    x_array = np.zeros([90,z_index_max])
+    for j_x in range(0, 90):
+        print (j_x)    
+        z_array[j_x,:] = get_height(model_datetime, j_x)[:z_index_max]/1000.
+        x_array[j_x,:] = np.ones([z_index_max]) * j_x - 45
         
         
    # let's try to determine time and height values properly     
-#    z_vector = get_height(model_datetime)[:-1]/1000
-    z_vector = get_height(model_datetime)[0:z_index_max]/1000
+
+    z_vector = get_height(model_datetime, x_lon)[0:z_index_max]/1000
     time_vector = [event_datetime + datetime.timedelta(minutes=wrf_step_minutes * i) for i in range(number_of_time_points)]    
     
     name_array = [ "QICE", "QSNOW", "QVAPOR", "QRAIN", "QGRAUP", "QCLOUD"]
-    height_for_wind_indexes_array = [0, 3, 4, 5, 9, 10, 11, 13]
+    height_for_wind_indexes_array = [0, 4, 5, 6, 7, 8, 10, 12, 13, 14, 15]
 
     aux_speed_height_number = 10;
     time_of_event_for_wind_array = [the_time_moment]*(aux_speed_height_number + 1);  
     the_second_time_of_event_for_wind_array = [the_second_time_moment]*(aux_speed_height_number + 1);  
-
+    the_third_time_of_event_for_wind_array = [the_third_time_moment]*(aux_speed_height_number + 1);  
+    the_fourth_time_of_event_for_wind_array = [the_fourth_time_moment]*(aux_speed_height_number + 1);  
 
   
     # the following three lines are the automatical determination of "number_of_time_points"   - the time-length of the data 
@@ -422,44 +428,58 @@ def main():
         z_chosen_height = z_vector[z_index]   
                      
     
-        array_from_get_wind = get_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points)
-        plt.figure(figsize=(18,8))
-        plt.title('Horizontal Wind-speed in time, altitude = ' + str(z_chosen_height) + ' km' + ' (above gr.)'+ ' z_ind = ' + str(z_index), fontsize=22)
-        plt.xlabel('time', fontsize=20, horizontalalignment='right' )
-        plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-        plt.plot(time_vector, array_from_get_wind )
-        plt.plot(time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number))
-        plt.plot(the_second_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number))
-        plt.show()    
-        
-        array_from_get_wind =  get_ew_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points)
-        plt.figure(figsize=(18,8))
-        plt.title('East-West Wind-speed in time, altitude = ' + str(z_chosen_height) + ' km' + ' (above gr.)'+ ' z_ind = ' + str(z_index), fontsize=22)
-        plt.xlabel('time', fontsize=20, horizontalalignment='right' )
-        plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-        plt.plot(time_vector, array_from_get_wind )
-        plt.plot(time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number))
-        plt.plot(the_second_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number))
-        plt.show()   
-        
-        array_from_get_wind = get_ns_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points)
-        plt.figure(figsize=(18,8))
-        plt.title('North-South Wind-speed in time, altitude = ' + str(z_chosen_height) + ' km' + ' (above gr.)'+ ' z_ind = ' + str(z_index), fontsize=22)
-        plt.xlabel('time', fontsize=20, horizontalalignment='right' )
-        plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-        plt.plot(time_vector, array_from_get_wind )
-        plt.plot(time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number))
-        plt.plot(the_second_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number))
-        plt.show()   
+# =============================================================================
+#         array_from_get_wind = get_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points)
+#         plt.figure(figsize=(18,8))
+#         plt.title('Horizontal Wind-speed in time, altitude = ' + str(z_chosen_height) + ' km' + ' (above gr.)'+ ' z_ind = ' + str(z_index), fontsize=22)
+#         plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+#         plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+#         plt.plot(time_vector, array_from_get_wind, linewidth=3 )
+#         plt.plot(time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_time_moment))
+#         plt.plot(the_second_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_second_time_moment))
+#         plt.plot(the_third_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_third_time_moment))
+#         plt.plot(the_fourth_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_fourth_time_moment))
+#         plt.legend(fontsize=20,loc=1)
+#         plt.show()   
+#         
+#         array_from_get_wind =  get_ew_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points)
+#         plt.figure(figsize=(18,8))
+#         plt.title('East-West Wind-speed in time, altitude = ' + str(z_chosen_height) + ' km' + ' (above gr.)'+ ' z_ind = ' + str(z_index), fontsize=22)
+#         plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+#         plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+#         plt.plot(time_vector, array_from_get_wind, linewidth=3 )
+#         plt.plot(time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_time_moment))
+#         plt.plot(the_second_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_second_time_moment))
+#         plt.plot(the_third_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_third_time_moment))
+#         plt.plot(the_fourth_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_fourth_time_moment))
+#         plt.legend(fontsize=20,loc=1)
+#         plt.show() 
+#         
+#         array_from_get_wind = get_ns_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points)
+#         plt.figure(figsize=(18,8))
+#         plt.title('North-South Wind-speed in time, altitude = ' + str(z_chosen_height) + ' km' + ' (above gr.)'+ ' z_ind = ' + str(z_index), fontsize=22)
+#         plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+#         plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+#         plt.plot(time_vector, array_from_get_wind, linewidth=3 )
+#         plt.plot(time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_time_moment))
+#         plt.plot(the_second_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_second_time_moment))
+#         plt.plot(the_third_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_third_time_moment))
+#         plt.plot(the_fourth_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_fourth_time_moment))
+#         plt.legend(fontsize=20,loc=1)
+#         plt.show()    
+# =============================================================================
         
         array_from_get_wind = get_vertical_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points)
         plt.figure(figsize=(18,8))
         plt.title('Vertical Wind-speed in time, altitude = ' + str(z_chosen_height) + ' km' + ' (above gr.)'+ ' z_ind = ' + str(z_index), fontsize=22)
         plt.xlabel('time', fontsize=20, horizontalalignment='right' )
         plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-        plt.plot(time_vector, array_from_get_wind ) 
-        plt.plot(time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number))
-        plt.plot(the_second_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number))
+        plt.plot(time_vector, array_from_get_wind, linewidth=3) 
+        plt.plot(time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_time_moment))
+        plt.plot(the_second_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_second_time_moment))
+        plt.plot(the_third_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_third_time_moment))
+        plt.plot(the_fourth_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_fourth_time_moment))
+        plt.legend(fontsize=20,loc=1)
         plt.show()   
 
 # =============================================================================
@@ -471,7 +491,7 @@ def main():
 #     plt.xlabel('time', fontsize=20, horizontalalignment='right' )
 #     plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
 #     plt.plot(time_vector, get_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points))
-#     plt.show()  
+#     plt.show()  temp_height
 # 
 # =============================================================================
 
@@ -573,7 +593,9 @@ def main():
     # then just use "number_of_the_time_point = that_chosen_value",
     # and we'll get x-z particles distribuation - on the lower picture    
         
-        picture2 =  plt.contourf(x_values, z_vector, np.array(   get_q_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, name )).transpose())       
+  #      picture2 =  plt.contourf(x_values, z_vector, np.array(   get_q_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, name )).transpose())    
+        print (z_array)   
+        picture2 =  plt.contourf(x_array, z_array, np.array(   get_q_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, name )))
         plt.colorbar(picture2) 
         plt.title('Density: '+ name + '  '+ str(the_time_moment), fontsize=22)
         plt.xlabel('x, km', fontsize=20, horizontalalignment='right' )
@@ -592,13 +614,15 @@ def main():
     
     
     
-        plt.figure(figsize=(14,8))
-        plt.plot(time_vector, np.array(el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, event_datetime, name, charge, number_of_time_points)))
-        plt.title('Electric field created by '+ name, fontsize=22)
-        plt.xlabel('time', fontsize=20, horizontalalignment='right' )
-        plt.ylabel('El_field, some_unit', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')          
-        plt.xlim(time_vector[0], time_vector[-1] )
-        plt.show()
+# =============================================================================
+#         plt.figure(figsize=(14,8))
+#         plt.plot(time_vector, np.array(el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, event_datetime, name, charge, number_of_time_points)))
+#         plt.title('Electric field created by '+ name, fontsize=22)
+#         plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+#         plt.ylabel('El_field, some_unit', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')          
+#         plt.xlim(time_vector[0], time_vector[-1] )
+#         plt.show()
+# =============================================================================
    
     
       
@@ -606,24 +630,28 @@ def main():
     
 
     
-    
-    
+  
     
     
  # let's draw the sum of fields, created by two kinds of cloud-particles
-    name1 = "QCLOUD"
-    name2 = "QGRAUP"
-    charge1 = -4*10**(-6);
-    charge2 = 6*10**(-5);
-    plt.figure(figsize=(14,8)) 
-    sum_of_fields = np.array(el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, event_datetime, name1, charge1, number_of_time_points)) + np.array(el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, event_datetime, name2, charge2, number_of_time_points))
-    plt.plot(time_vector, sum_of_fields)
-    plt.title('Electric field created by '+ name1 + ' and ' + name2, fontsize=22)
-    plt.xlabel('time', fontsize=20, horizontalalignment='right' )
-    plt.ylabel('El_field, some_unit', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-    plt.xlim(time_vector[0], time_vector[-1] )    
-    plt.ylim(-8, 8 )   
-    plt.show()
+# =============================================================================
+#     name1 = "QCLOUD"
+#     name2 = "QGRAUP"
+#     charge1 = -4*10**(-6);
+#     charge2 = 6*10**(-5);
+#     plt.figure(figsize=(14,8)) 
+#     sum_of_fields = np.array(el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, event_datetime, name1, charge1, number_of_time_points)) + np.array(el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, event_datetime, name2, charge2, number_of_time_points))
+#     plt.plot(time_vector, sum_of_fields)
+#     plt.title('Electric field created by '+ name1 + ' and ' + name2, fontsize=22)
+#     plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+#     plt.ylabel('El_field, some_unit', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+#     plt.xlim(time_vector[0], time_vector[-1] )    
+#     plt.ylim(-8, 8 )   
+#     plt.show()
+# =============================================================================
+    
+    
+    
 
  # let's draw the sum of fields, created by three kinds of cloud-particles
 # =============================================================================
