@@ -188,7 +188,7 @@ def get_ew_wind_certain_level(model_datetime, model_period, model_length, event_
     u = file.variables['U'].data[:, :, :, :-1] 
     return u[time_index:time_index + number_of_time_points, z_index, y_lat, x_lon]
 
-def get_ns_wind_certain_level(model_datetime, model_period, model_length, event_datetime,  z_index, number_of_time_points = 1):
+def get_ns_wind_certain_level(model_datetime, model_period, model_length, event_datetime,  z_index, number_of_time_points = 1):   
     time_index = get_index(model_datetime, model_period, model_length, event_datetime, number_of_time_points)
     file = get_wrf_file(model_datetime)
     v = file.variables['V'].data[:, :, :-1, :]
@@ -241,7 +241,13 @@ def get_q_xz(z_index_max, model_datetime, model_period, model_length, the_time_m
     file = get_wrf_file(model_datetime)
     vapor = file.variables[name].data[:] / 1    
 #    vapor_xz = vapor[time_index , :, y_lat, :]
-    vapor_xz = vapor[time_index , 0:z_index_max, y_lat, :]
+ 
+   # let's discover only the certain region along x-axis! 
+    vapor_xz = vapor[time_index , 0:z_index_max, y_lat, 35:56]
+    
+    #vapor_xz = vapor[time_index , 0:z_index_max, y_lat, :]
+    
+    
         # we can see, that first coordinate is abscissa
     # let's transpose this array to have z-coordinate as the ordinate
     
@@ -329,7 +335,7 @@ def main():
 #     model_period = datetime.timedelta(minutes = wrf_step_minutes)
 # #    set_model_datetime(model_datetime , wrf_step_minutes)        # the second argument is the value of time step, in minutes
 #     event_datetime = datetime.datetime(2018, 3, 5, 1, 30)     
-#  # here we have an automatical "numnber_of_time_points"-initialization  
+#  # here we have an automatical "numnber_of_time_points"-initialization      z_array = np.zeros([40,z_index_max])
 #     event_finish_datetime = datetime.datetime(2018, 3, 5, 3, 30)   
 # =============================================================================
     
@@ -337,25 +343,49 @@ def main():
 #    set_model_datetime(model_datetime , wrf_step_minutes)        # the second argument is the value of time step, in minutes
     model_period = datetime.timedelta(minutes = wrf_step_minutes)    
     
+    
+# =============================================================================
+#     model_datetime = datetime.datetime(2016, 5, 4, 0, 0)
+#     event_finish_datetime = datetime.datetime(2016, 5, 5, 0, 0)
+# 
+#     the_time_moment = datetime.datetime(2016, 5, 4, 12, 20) 
+#     the_second_time_moment = datetime.datetime(2016, 5, 4, 18, 45) 
+# =============================================================================
+    
+    
 # =============================================================================
 #     model_datetime = datetime.datetime(2016, 5, 11, 18, 0)
 #     event_finish_datetime = datetime.datetime(2016, 5, 13, 0, 00)   
-#     the_time_moment = datetime.datetime(2016, 5, 12, 14, 00)     
+#     the_time_moment = datetime.datetime(2016, 5, 12, 5, 30)     
+#     the_second_time_moment = datetime.datetime(2016, 5, 12, 10, 50) 
 # =============================================================================
 
 
-    model_datetime = datetime.datetime(2016, 10, 29, 0, 0)
-    event_finish_datetime = datetime.datetime(2016, 10, 30, 12, 0)
+# =============================================================================
+#     model_datetime = datetime.datetime(2016, 10, 29, 0, 0)
+#     event_finish_datetime = datetime.datetime(2016, 10, 30, 12, 0)
+# 
+#     the_time_moment = datetime.datetime(2016, 10, 29, 18, 30) 
+#     the_second_time_moment = datetime.datetime(2016, 10, 29, 22, 0) 
+# =============================================================================
+    
+    
+    model_datetime = datetime.datetime(2016, 6, 11, 0, 0)
+    event_finish_datetime = datetime.datetime(2016, 6, 12, 0, 0)
 
-    the_time_moment = datetime.datetime(2016, 10, 29, 18, 30) 
-    the_second_time_moment = datetime.datetime(2016, 10, 29, 22, 0) 
-    the_third_time_moment = datetime.datetime(2017, 9, 29, 18, 50)  
-    the_fourth_time_moment = datetime.datetime(2017, 9, 29, 18, 50) 
-
+    the_time_moment = datetime.datetime(2016, 6, 11, 11, 10) 
+    the_second_time_moment = datetime.datetime(2016, 6, 11, 11, 10) 
+    
+    the_time_moment = datetime.datetime(2016, 6, 11, 15, 50) 
+    
+    
+    the_third_time_moment  = datetime.datetime(2016, 5, 12, 12, 25)     
+    the_fourth_time_moment = datetime.datetime(2016, 5, 12, 14, 0) 
+    the_fifth_time_moment = datetime.datetime(2016, 5, 12, 14, 45) 
 
  #   the_second_time_moment  = the_time_moment
-    the_third_time_moment=  the_time_moment
-    the_fourth_time_moment =  the_time_moment
+#    the_third_time_moment=  the_time_moment
+  #  the_fourth_time_moment =  the_time_moment
 
 # =============================================================================
 #     model_datetime = datetime.datetime(2017, 9, 29, 6, 0)
@@ -381,17 +411,28 @@ def main():
    
     file = get_wrf_file(model_datetime)
     variable = file.variables['T2'].data[:]
-    model_length = len(variable[:, y_lat, x_lon])
+    model_length = len(variable[:, y_lat, x_lon])  
     
 #    number_of_time_points = 25; 
 
     charge = 0.5*10**(-6);     
-    z_array = np.zeros([90,z_index_max])
-    x_array = np.zeros([90,z_index_max])
-    for j_x in range(0, 90):
+    
+# =============================================================================
+#     z_array = np.zeros([90,z_index_max])  
+#     x_array = np.zeros([90,z_index_max])
+#     for j_x in range(0, 90):
+#         print (j_x)    
+#         z_array[j_x,:] = get_height(model_datetime, j_x)[:z_index_max]/1000.
+#         x_array[j_x,:] = np.ones([z_index_max]) * j_x - 45
+# =============================================================================
+    
+    
+    z_array = np.zeros([21,z_index_max])
+    x_array = np.zeros([21,z_index_max])
+    for j_x in range(35, 56):
         print (j_x)    
-        z_array[j_x,:] = get_height(model_datetime, j_x)[:z_index_max]/1000.
-        x_array[j_x,:] = np.ones([z_index_max]) * j_x - 45
+        z_array[j_x-35,:] = get_height(model_datetime, j_x)[:z_index_max]/1000.
+        x_array[j_x-35,:] = np.ones([z_index_max]) * j_x - 45
         
         
    # let's try to determine time and height values properly     
@@ -399,14 +440,17 @@ def main():
     z_vector = get_height(model_datetime, x_lon)[0:z_index_max]/1000
     time_vector = [event_datetime + datetime.timedelta(minutes=wrf_step_minutes * i) for i in range(number_of_time_points)]    
     
-    name_array = [ "QICE", "QSNOW", "QVAPOR", "QRAIN", "QGRAUP", "QCLOUD"]
-    height_for_wind_indexes_array = [0, 4, 5, 6, 7, 8, 10, 12, 13, 14, 15]
+   # name_array = ["QCLOUD", "QGRAUP", "QICE",  "QRAIN", "QSNOW","QVAPOR"]
+   # name_array = ["QCLOUD", "QGRAUP", "QICE",  "QRAIN", "QSNOW"]
+    name_array = ["QSNOW",  "QRAIN",  "QICE", "QGRAUP", "QCLOUD"]
+    height_for_wind_indexes_array = [0, 4, 5, 6, 7, 8, 10, 12, 13, 14, 15, 16, 17]
 
     aux_speed_height_number = 10;
     time_of_event_for_wind_array = [the_time_moment]*(aux_speed_height_number + 1);  
     the_second_time_of_event_for_wind_array = [the_second_time_moment]*(aux_speed_height_number + 1);  
     the_third_time_of_event_for_wind_array = [the_third_time_moment]*(aux_speed_height_number + 1);  
     the_fourth_time_of_event_for_wind_array = [the_fourth_time_moment]*(aux_speed_height_number + 1);  
+    the_fifth_time_of_event_for_wind_array = [the_fifth_time_moment]*(aux_speed_height_number + 1);  
 
   
     # the following three lines are the automatical determination of "number_of_time_points"   - the time-length of the data 
@@ -479,6 +523,7 @@ def main():
         plt.plot(the_second_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_second_time_moment))
         plt.plot(the_third_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_third_time_moment))
         plt.plot(the_fourth_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_fourth_time_moment))
+        plt.plot(the_fifth_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_fifth_time_moment))
         plt.legend(fontsize=20,loc=1)
         plt.show()   
 
@@ -500,7 +545,7 @@ def main():
 #     plt.figure(figsize=(18,8))    
 #     plt.title('Temperature in time, ground level' , fontsize=22)
 #     plt.xlabel('time', fontsize=20, horizontalalignment='right' )
-#     plt.ylabel('T, C', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+#     plt.ylabel('T, C', rotation='horizontal', he_fifth_time_momentfontsize=20, horizontalalignment='right', verticalalignment='top')
 #     plt.plot(time_vector, get_t2(model_datetime, model_period, model_length, event_datetime, number_of_time_points=number_of_time_points))
 #     plt.xlim(event_datetime  , event_datetime + datetime.timedelta(minutes=wrf_step_minutes * (number_of_time_points - 1))  )
 #     plt.show()
@@ -586,7 +631,7 @@ def main():
         plt.axis('normal')       
         plt.show()
         
-        plt.figure(figsize=(18,8))
+        plt.figure(figsize=(22, 7))
         
     # Let's look on the upper picture - t-z particles distribution, 
     # and choose the time-point under interest (one of the values on the time-axis)
@@ -594,7 +639,10 @@ def main():
     # and we'll get x-z particles distribuation - on the lower picture    
         
   #      picture2 =  plt.contourf(x_values, z_vector, np.array(   get_q_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, name )).transpose())    
-        print (z_array)   
+   
+
+   #  print (z_array)  
+     
         picture2 =  plt.contourf(x_array, z_array, np.array(   get_q_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, name )))
         plt.colorbar(picture2) 
         plt.title('Density: '+ name + '  '+ str(the_time_moment), fontsize=22)
@@ -613,16 +661,20 @@ def main():
         plt.xlim(time_vector[0], time_vector[-1] )
     
     
+        time_length = len(time_vector)
+        time_start_index =  time_length*4//9;
+        time_finish_index =  time_length*2//3;
     
-# =============================================================================
-#         plt.figure(figsize=(14,8))
-#         plt.plot(time_vector, np.array(el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, event_datetime, name, charge, number_of_time_points)))
-#         plt.title('Electric field created by '+ name, fontsize=22)
-#         plt.xlabel('time', fontsize=20, horizontalalignment='right' )
-#         plt.ylabel('El_field, some_unit', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')          
-#         plt.xlim(time_vector[0], time_vector[-1] )
-#         plt.show()
-# =============================================================================
+    
+    
+        plt.figure(figsize=(14,8))
+        plt.plot(time_vector, np.array(el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, event_datetime, name, charge, number_of_time_points)))
+        plt.title('Electric field created by '+ name, fontsize=22)
+        plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+        plt.ylabel('El_field, some_unit', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')          
+#        plt.xlim(time_vector[0], time_vector[-1] )
+        plt.xlim(time_vector[time_start_index]  , time_vector[time_finish_index] )
+        plt.show()
    
     
       

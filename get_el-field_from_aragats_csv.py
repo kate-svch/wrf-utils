@@ -295,6 +295,9 @@ csv_data = pd.read_csv(csv_folder + start_date_str + '_' + name_of_value  + '.cs
 csv_length = len(csv_data)
 csv_time =  [0] * csv_length
 
+time_start_index =  csv_length*4//9;
+time_finish_index =  csv_length*2//3;
+
 for jj in range (0, csv_length):
     jj_day =  int(csv_data.iloc[jj, 0][0:2])
     jj_hour =  int(csv_data.iloc[jj, 0][10:12])
@@ -306,22 +309,24 @@ for jj in range (0, csv_length):
     csv_time[jj]  = datetime.datetime(jj_year, jj_month, jj_day, jj_hour, jj_minute, jj_second)
 
 plt.figure(figsize=(14,8))
-plt.plot(csv_time, csv_data.iloc[:, 1])
-plt.plot(the_first_time_for_field_array, model2.get_aux_speed_array(csv_data.iloc[:, 1], aux_pressure_height_number), label = str(the_first_field_time_moment))
-plt.plot(the_second_time_for_field_array, model2.get_aux_speed_array(csv_data.iloc[:, 1], aux_pressure_height_number), label = str(the_second_field_time_moment))
-plt.plot(the_third_time_for_field_array, model2.get_aux_speed_array(csv_data.iloc[:, 1], aux_pressure_height_number), label = str(the_third_field_time_moment))
+plt.plot(csv_time[:], csv_data.iloc[: , 1])
 
-plt.plot(lightning_time_array[0: (aux_pressure_height_number + 1)], lightning_field_array[jp*(aux_pressure_height_number + 1) : (jp+1)*(aux_pressure_height_number + 1)], color = '#0aafb1', label = 'lightnings')    
+   
 for jp in range (1, len(lightning_time_data)):
     plt.plot(lightning_time_array[jp*(aux_pressure_height_number + 1) : (jp+1)*(aux_pressure_height_number + 1)], lightning_field_array[jp*(aux_pressure_height_number + 1) : (jp+1)*(aux_pressure_height_number + 1)], color = '#0aafb1')    
        
+                                  
+plt.plot(the_first_time_for_field_array, model2.get_aux_speed_array(csv_data.iloc[:, 1], aux_pressure_height_number), linewidth=3, label = str(the_first_field_time_moment), color =  (1, 0.4, 0, 1))
+plt.plot(the_second_time_for_field_array, model2.get_aux_speed_array(csv_data.iloc[:, 1], aux_pressure_height_number), linewidth=3, label = str(the_second_field_time_moment), color =  (0.9, 0, 0.4, 1))
+plt.plot(the_third_time_for_field_array, model2.get_aux_speed_array(csv_data.iloc[:, 1], aux_pressure_height_number), linewidth=3, label = str(the_third_field_time_moment), color =  (0.5, 0.9, 0, 1))                               
+                                  
 plt.title(name_of_value+ ' csv', fontsize=22)
 plt.locator_params(axis='y', nbins=10)
 plt.locator_params(axis='x', nbins=6)
 plt.xlabel('time', fontsize=20, horizontalalignment='right' )
 plt.ylabel(r'$\frac{kV}{m}$', rotation='horizontal', fontsize=24, horizontalalignment='right', verticalalignment='top')
 #plt.xlim(csv_time[0]  , csv_time[-1] )
-plt.xlim(csv_time[30000]  , csv_time[60000] )
+plt.xlim(csv_time[time_start_index]  , csv_time[time_finish_index] )
 plt.legend(fontsize=20,loc=1)
 plt.show()
 
