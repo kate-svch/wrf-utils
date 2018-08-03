@@ -348,7 +348,7 @@ def main():
 #     model_datetime = datetime.datetime(2016, 5, 4, 0, 0)
 #     event_finish_datetime = datetime.datetime(2016, 5, 5, 0, 0)
 # 
-#     the_time_moment = datetime.datetime(2016, 5, 4, 12, 20) 
+#     the_time_moment = datetime.datetime(2016, 5, 4, 12, 0) 
 #     the_second_time_moment = datetime.datetime(2016, 5, 4, 18, 45) 
 # =============================================================================
     
@@ -358,8 +358,17 @@ def main():
 #     event_finish_datetime = datetime.datetime(2016, 5, 13, 0, 00)   
 #     the_time_moment = datetime.datetime(2016, 5, 12, 5, 30)     
 #     the_second_time_moment = datetime.datetime(2016, 5, 12, 10, 50) 
+#     the_third_time_moment  = datetime.datetime(2016, 5, 12, 12, 25)     
+#     the_fourth_time_moment = datetime.datetime(2016, 5, 12, 14, 0) 
+#     the_fifth_time_moment = datetime.datetime(2016, 5, 12, 14, 45) 
 # =============================================================================
-
+    
+    
+    model_datetime = datetime.datetime(2016, 10, 29, 0)
+    event_finish_datetime = datetime.datetime(2016, 10, 30, 12)
+    the_time_moment = datetime.datetime(2016, 10, 29, 7, 0)
+    the_second_time_moment  =  datetime.datetime(2016, 10, 29, 22, 10)
+  
 
 # =============================================================================
 #     model_datetime = datetime.datetime(2016, 10, 29, 0, 0)
@@ -370,22 +379,22 @@ def main():
 # =============================================================================
     
     
-    model_datetime = datetime.datetime(2016, 6, 11, 0, 0)
-    event_finish_datetime = datetime.datetime(2016, 6, 12, 0, 0)
+# =============================================================================
+#     model_datetime = datetime.datetime(2016, 6, 11, 0, 0)
+#     event_finish_datetime = datetime.datetime(2016, 6, 12, 0, 0)
+# 
+#     the_time_moment = datetime.datetime(2016, 6, 11, 8, 30) 
+#     the_second_time_moment = datetime.datetime(2016, 6, 11, 9, 50)     
+#     the_third_time_moment  = datetime.datetime(2016, 6, 11, 10, 5)     
+#     the_fourth_time_moment = datetime.datetime(2016, 6, 11, 11, 10) 
+#     the_fifth_time_moment = datetime.datetime(2016, 5, 12, 14, 45) 
+# =============================================================================
 
-    the_time_moment = datetime.datetime(2016, 6, 11, 11, 10) 
-    the_second_time_moment = datetime.datetime(2016, 6, 11, 11, 10) 
-    
-    the_time_moment = datetime.datetime(2016, 6, 11, 15, 50) 
-    
-    
-    the_third_time_moment  = datetime.datetime(2016, 5, 12, 12, 25)     
-    the_fourth_time_moment = datetime.datetime(2016, 5, 12, 14, 0) 
-    the_fifth_time_moment = datetime.datetime(2016, 5, 12, 14, 45) 
 
  #   the_second_time_moment  = the_time_moment
-#    the_third_time_moment=  the_time_moment
-  #  the_fourth_time_moment =  the_time_moment
+    the_third_time_moment=  the_time_moment
+    the_fourth_time_moment =  the_time_moment
+    the_fifth_time_moment = the_time_moment
 
 # =============================================================================
 #     model_datetime = datetime.datetime(2017, 9, 29, 6, 0)
@@ -443,7 +452,9 @@ def main():
    # name_array = ["QCLOUD", "QGRAUP", "QICE",  "QRAIN", "QSNOW","QVAPOR"]
    # name_array = ["QCLOUD", "QGRAUP", "QICE",  "QRAIN", "QSNOW"]
     name_array = ["QSNOW",  "QRAIN",  "QICE", "QGRAUP", "QCLOUD"]
-    height_for_wind_indexes_array = [0, 4, 5, 6, 7, 8, 10, 12, 13, 14, 15, 16, 17]
+  #  height_for_wind_indexes_array = [0, 4, 5, 6, 7, 8, 10, 12, 13, 14, 15, 16, 17]
+  
+    height_for_wind_indexes_array = [0, 4, 5, 6, 7, 8, 10, 12, 13, 14,  15]
 
     aux_speed_height_number = 10;
     time_of_event_for_wind_array = [the_time_moment]*(aux_speed_height_number + 1);  
@@ -472,19 +483,21 @@ def main():
         z_chosen_height = z_vector[z_index]   
                      
     
-# =============================================================================
-#         array_from_get_wind = get_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points)
-#         plt.figure(figsize=(18,8))
-#         plt.title('Horizontal Wind-speed in time, altitude = ' + str(z_chosen_height) + ' km' + ' (above gr.)'+ ' z_ind = ' + str(z_index), fontsize=22)
-#         plt.xlabel('time', fontsize=20, horizontalalignment='right' )
-#         plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-#         plt.plot(time_vector, array_from_get_wind, linewidth=3 )
-#         plt.plot(time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_time_moment))
-#         plt.plot(the_second_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_second_time_moment))
-#         plt.plot(the_third_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_third_time_moment))
-#         plt.plot(the_fourth_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_fourth_time_moment))
-#         plt.legend(fontsize=20,loc=1)
-#         plt.show()   
+
+        array_from_get_wind = get_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points)
+        plt.figure(figsize=(18,8))
+        plt.title('Horizontal Wind-speed in time, altitude = ' + str(z_chosen_height) + ' km' + ' (above gr.)'+ ' z_ind = ' + str(z_index), fontsize=22)
+        plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+        plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+        plt.plot(time_vector, array_from_get_wind, linewidth=3 )
+        plt.plot(time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_time_moment))
+        plt.plot(the_second_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_second_time_moment))
+        plt.plot(the_third_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_third_time_moment))
+        plt.plot(the_fourth_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_fourth_time_moment))
+        plt.legend(fontsize=20,loc=1)
+        plt.show()   
+         
+# =============================================================================         
 #         
 #         array_from_get_wind =  get_ew_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points)
 #         plt.figure(figsize=(18,8))
@@ -523,7 +536,7 @@ def main():
         plt.plot(the_second_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_second_time_moment))
         plt.plot(the_third_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_third_time_moment))
         plt.plot(the_fourth_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_fourth_time_moment))
-        plt.plot(the_fifth_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_fifth_time_moment))
+ #       plt.plot(the_fifth_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_fifth_time_moment))
         plt.legend(fontsize=20,loc=1)
         plt.show()   
 
@@ -621,9 +634,10 @@ def main():
 #         plt.show()
 # =============================================================================
     
+        
         plt.figure(figsize=(18,8))
         picture_mass = plt.contourf(time_vector, z_vector, np.array(get_q(z_index_max, model_datetime, model_period, model_length, event_datetime, name, number_of_time_points)).transpose())   
-        plt.colorbar(picture_mass) 
+        plt.colorbar(picture_mass, format =  "%0.6f" ) 
         plt.title('Density: '+ name, fontsize=22)
         plt.xlabel('time', fontsize=20, horizontalalignment='right' )
         plt.ylabel('z, km', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
@@ -632,6 +646,8 @@ def main():
         plt.show()
         
         plt.figure(figsize=(22, 7))
+        
+                     
         
     # Let's look on the upper picture - t-z particles distribution, 
     # and choose the time-point under interest (one of the values on the time-axis)
@@ -644,7 +660,7 @@ def main():
    #  print (z_array)  
      
         picture2 =  plt.contourf(x_array, z_array, np.array(   get_q_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, name )))
-        plt.colorbar(picture2) 
+        plt.colorbar(picture2, format =  "%0.6f") 
         plt.title('Density: '+ name + '  '+ str(the_time_moment), fontsize=22)
         plt.xlabel('x, km', fontsize=20, horizontalalignment='right' )
         plt.ylabel('z, km', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
@@ -663,7 +679,7 @@ def main():
     
         time_length = len(time_vector)
         time_start_index =  time_length*4//9;
-        time_finish_index =  time_length*2//3;
+        time_finish_index =  time_length*3//5;
     
     
     
@@ -672,8 +688,8 @@ def main():
         plt.title('Electric field created by '+ name, fontsize=22)
         plt.xlabel('time', fontsize=20, horizontalalignment='right' )
         plt.ylabel('El_field, some_unit', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')          
-#        plt.xlim(time_vector[0], time_vector[-1] )
-        plt.xlim(time_vector[time_start_index]  , time_vector[time_finish_index] )
+        plt.xlim(time_vector[0], time_vector[-1] )
+   #     plt.xlim(time_vector[time_start_index]  , time_vector[time_finish_index] )
         plt.show()
    
     

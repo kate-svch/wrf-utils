@@ -40,7 +40,7 @@ def get_aux_pressure_array(array_csv, array_wrf, aux_pressure_height_number):
 
 
 
-start_date_str = '2016-06-11-00-00'; 
+start_date_str = '2017-10-10-06-00'; 
 
 
 #model_datetime = datetime.datetime(2016, 10, 29, 0, 0)
@@ -48,25 +48,51 @@ start_date_str = '2016-06-11-00-00';
 #the_time_moment = datetime.datetime(2016, 5, 4, 0, 0)
 
 
-model_datetime = datetime.datetime(2016, 6, 11, 0, 0)
-event_finish_datetime = datetime.datetime(2016, 6, 12, 00, 0)
-the_time_moment = datetime.datetime(2016, 6, 11, 12, 0)
+model_datetime = datetime.datetime(2017, 10, 10, 6)
+event_finish_datetime = datetime.datetime(2017, 10, 11, 00)
+the_time_moment = datetime.datetime(2017, 10, 10, 12, 30)
+#the_second_time_moment = datetime.datetime(2016, 5, 4, 18, 45) 
+
+
+
+# =============================================================================
+# model_datetime = datetime.datetime(2016, 6, 11, 0, 0)
+# event_finish_datetime = datetime.datetime(2016, 6, 12, 00, 0)
+# the_time_moment = datetime.datetime(2016, 6, 11, 12, 0)
+# =============================================================================
+
+
 event_datetime = datetime.datetime(int(start_date_str[0:4]), int(start_date_str[5:7]), int(start_date_str[8:10]), int(start_date_str[11:13]), int(start_date_str[14:16]))  
 
 # it's for time-marks at "pressure_comparison"
-the_first_aux_time_moment = datetime.datetime(16, 6, 11, 10, 45)
-the_second_aux_time_moment = datetime.datetime(16, 6, 11, 12, 25)  
+the_first_aux_time_moment = datetime.datetime(17, 10, 10, 12, 30)
+the_second_aux_time_moment = datetime.datetime(17, 10, 10, 12, 30)
+
+
+
 aux_pressure_height_number = 10;
 the_first_time_for_pressure_array = [the_first_aux_time_moment]*(aux_pressure_height_number + 1);  
 the_second_time_for_pressure_array= [the_second_aux_time_moment]*(aux_pressure_height_number + 1);  
 
 # it's for time-marks at "el_field"
-the_first_field_time_moment = datetime.datetime(16, 6, 11, 9, 50)  + (the_second_aux_time_moment - the_first_aux_time_moment)
-the_second_field_time_moment = datetime.datetime(16, 6, 11, 10, 5) + (the_second_aux_time_moment - the_first_aux_time_moment)
-the_third_field_time_moment = datetime.datetime(16, 6, 11, 11, 10) + (the_second_aux_time_moment - the_first_aux_time_moment)
+the_first_field_time_moment = datetime.datetime(17, 10, 10, 12, 30) + (the_second_aux_time_moment - the_first_aux_time_moment)
+the_second_field_time_moment = datetime.datetime(17, 10, 10, 14, 0)    + (the_second_aux_time_moment - the_first_aux_time_moment)
+the_third_field_time_moment = datetime.datetime(17, 10, 10, 14, 20) + (the_second_aux_time_moment - the_first_aux_time_moment)
+the_fourth_field_time_moment = datetime.datetime(17, 10, 10, 15, 55) + (the_second_aux_time_moment - the_first_aux_time_moment)
+the_fifth_field_time_moment = datetime.datetime(17, 10, 10, 17, 30) + (the_second_aux_time_moment - the_first_aux_time_moment)
+the_sixth_field_time_moment = datetime.datetime(17, 10, 10, 20, 15) + (the_second_aux_time_moment - the_first_aux_time_moment)
+
+#the_first_field_time_moment = datetime.datetime(16,  6, 4, 12, 10) 
+#the_second_field_time_moment = datetime.datetime(16, 6, 4, 15, 15) 
+#the_third_field_time_moment = datetime.datetime(16, 6, 4, 12, 10) 
+#the_fourth_field_time_moment = datetime.datetime(16, 6, 4, 12, 10) 
+
 the_first_time_for_field_array = [the_first_field_time_moment]*(aux_pressure_height_number + 1);  
 the_second_time_for_field_array= [the_second_field_time_moment]*(aux_pressure_height_number + 1);  
 the_third_time_for_field_array= [the_third_field_time_moment]*(aux_pressure_height_number + 1);  
+the_fourth_time_for_field_array= [the_fourth_field_time_moment]*(aux_pressure_height_number + 1);  
+the_fifth_time_for_field_array= [the_fifth_field_time_moment]*(aux_pressure_height_number + 1);  
+the_sixth_time_for_field_array= [the_sixth_field_time_moment]*(aux_pressure_height_number + 1);  
 
 
 csv_folder = '/home/kate-svch/wrfmain/kate/reanalysis/csv_measurements/' + start_date_str + '/';
@@ -295,8 +321,8 @@ csv_data = pd.read_csv(csv_folder + start_date_str + '_' + name_of_value  + '.cs
 csv_length = len(csv_data)
 csv_time =  [0] * csv_length
 
-time_start_index =  csv_length*4//9;
-time_finish_index =  csv_length*2//3;
+time_start_index =  csv_length*1//8;
+time_finish_index =  csv_length*19//20;
 
 for jj in range (0, csv_length):
     jj_day =  int(csv_data.iloc[jj, 0][0:2])
@@ -319,7 +345,10 @@ for jp in range (1, len(lightning_time_data)):
 plt.plot(the_first_time_for_field_array, model2.get_aux_speed_array(csv_data.iloc[:, 1], aux_pressure_height_number), linewidth=3, label = str(the_first_field_time_moment), color =  (1, 0.4, 0, 1))
 plt.plot(the_second_time_for_field_array, model2.get_aux_speed_array(csv_data.iloc[:, 1], aux_pressure_height_number), linewidth=3, label = str(the_second_field_time_moment), color =  (0.9, 0, 0.4, 1))
 plt.plot(the_third_time_for_field_array, model2.get_aux_speed_array(csv_data.iloc[:, 1], aux_pressure_height_number), linewidth=3, label = str(the_third_field_time_moment), color =  (0.5, 0.9, 0, 1))                               
-                                  
+plt.plot(the_fourth_time_for_field_array, model2.get_aux_speed_array(csv_data.iloc[:, 1], aux_pressure_height_number), linewidth=3, label = str(the_fourth_field_time_moment))                             
+plt.plot(the_fifth_time_for_field_array, model2.get_aux_speed_array(csv_data.iloc[:, 1], aux_pressure_height_number), linewidth=3, label = str(the_fifth_field_time_moment))                             
+plt.plot(the_sixth_time_for_field_array, model2.get_aux_speed_array(csv_data.iloc[:, 1], aux_pressure_height_number), linewidth=3, label = str(the_sixth_field_time_moment))                              
+                               
 plt.title(name_of_value+ ' csv', fontsize=22)
 plt.locator_params(axis='y', nbins=10)
 plt.locator_params(axis='x', nbins=6)
