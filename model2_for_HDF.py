@@ -18,6 +18,12 @@ from netCDF4 import Dataset
 x_lon = 45                                                                  # Index to d02 Aragats point
 y_lat = 45                                                                  # Index to d02 Aragats point
            
+
+x_min = 39; x_max = 52;  # it's borders of the drawn area for xz-diagrams
+z_index_max = 20;   # it's the maximal index of height: 20 corresponds to approximately  10.2 km
+
+
+
 #model_datetime = datetime.datetime(2018, 3, 4, 18, 0)            # Starting time for WRF modeling (hour, minute)
 
 #model_datetime = None #datetime.datetime(2016, 5, 4, 0, 0)  # Starting time for WRF modeling
@@ -27,12 +33,9 @@ y_lat = 45                                                                  # In
 #current_folder = '/mnt/data-internal/reanalysis'    # this is the folder for the 2018-03-05 event
 
 #current_folder = '/mnt/data-internal/newversion'
-current_folder = '/mnt/data-internal/Mansell'
+#current_folder = '/mnt/data-internal/Mansell'
 
-#current_folder = '/mnt/data-internal/newversion/forecast'
-
-#current_folder = '/mnt/data-internal/RDA_DS083.3'
-
+current_folder = '/mnt/data-internal/RDA_DS083.3'
 
 # this function is used in other files        
 # =============================================================================
@@ -206,6 +209,17 @@ def get_q(z_index_max, model_datetime, model_period, model_length, event_datetim
 # we can see, that first coordinate is abscissa
 
 
+def get_mass_density(z_index_max, model_datetime, model_period, model_length, event_datetime, name, number_of_time_points=1):
+   # get quantity of "name" microphysical fracture from 2m to 20 kilometers height : DIFFERENT HEIGHT AND TIME
+   
+    time_index = get_index(model_datetime, model_period, model_length, event_datetime,  number_of_time_points )
+    file = get_wrf_file(model_datetime)
+    vapor = wrf.getvar(file, name, None) / (wrf.getvar(file, 'ALT', None))  
+#    return vapor[time_index : time_index  + number_of_time_points, :, y_lat, x_lon]
+    return vapor[time_index : time_index  + number_of_time_points, 0:z_index_max, y_lat, x_lon]
+
+
+
 def get_q_profile_in_certain_moment_of_time(model_datetime, model_period, model_length, the_time_moment, name):
       
 # get quantity of "name" microphysical fracture from 2m to 20 kilometers height : DIFFERENT HEIGHT
@@ -238,6 +252,39 @@ def get_q_xz(z_index_max, model_datetime, model_period, model_length, the_time_m
     vapor_xz = vapor_xz.transpose() 
     return vapor_xz
     
+
+def get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, name):
+      
+# get quantity of "name" microphysical fracture from 2m to 20 kilometers height: DIFFERENT HEIGHT ANG X-VALUE
+   
+    time_index = get_index(model_datetime, model_period, model_length, the_time_moment, 1)
+    file = get_wrf_file(model_datetime)
+    vapor = wrf.getvar(file, name, None) / (wrf.getvar(file, 'ALT', None))  
+#    vapor_xz = vapor[time_index , :, y_lat, :] 
+   # let's discover only the certain region along x-axis! 
+    vapor_xz = vapor[time_index , 0:z_index_max, y_lat, x_min:x_max]    
+    #vapor_xz = vapor[time_index , 0:z_index_max, y_lat, :]    
+        # we can see, that first coordinate is abscissa
+    # let's transpose this array to have z-coordinate as the ordinate   
+    vapor_xz = vapor_xz.transpose() 
+    return vapor_xz
+
+
+
+def get_mass_density_integral(z_index_max, model_datetime, model_period, model_length, event_datetime, name, number_of_time_points=1):
+   # get quantity of "name" microphysical fracture from 2m to 20 kilometers height : DIFFERENT HEIGHT AND TIME
+   
+    time_index = get_index(model_datetime, model_period, model_length, event_datetime,  number_of_time_points )
+    file = get_wrf_file(model_datetime)
+    vapor = wrf.getvar(file, name, None) / (wrf.getvar(file, 'ALT', None)) 
+    q_array = vapor[time_index , 0:z_index_max, y_lat, x_min:x_max]
+    sum = 0
+    for row in range (len(q_array)):
+        for col in range(len(q_array[0])):
+            sum = sum + q_array[row][col]
+    return sum
+
+
 # =============================================================================
 #     time_index = get_index(event_datetime, 1 )
 #     file = get_wrf_file()
@@ -261,14 +308,14 @@ def el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, 
     charge *= 9*10**(9)    
     time_index = get_index(model_datetime, model_period, model_length, event_datetime, number_of_time_points )
     file = get_wrf_file(model_datetime)
-    vapor = wrf.getvar(file, name, None)    
+    vapor = wrf.getvar(file, name, None) / (wrf.getvar(file, 'ALT', None))  
 #    z_vector = get_height(model_datetime)[0:-1]  
     z_vector = get_height(model_datetime, x_lon)[0:z_index_max]             # "z_vector" outside this funciton is height-values in "km", here - in "m"
     # vapor_tz = vapor[:, :, y_lat, x_lon]
     vapor_tz = vapor[time_index : time_index  + number_of_time_points, :, y_lat, x_lon]
  
     el_field_int_z_t = [0] * number_of_time_points
-    for j in range(0, number_of_time_points):
+    for j in range(2, number_of_time_points):
      #   for z_sum_index in range(0, 40):
         for z_sum_index in range(0, z_index_max):
             el_field_int_z_t[j] += vapor_tz[j, z_sum_index]/((z_vector[z_sum_index])**2)
@@ -331,10 +378,17 @@ def main():
 #     model_datetime = datetime.datetime(2016, 5, 4, 0, 0)
 #     event_finish_datetime = datetime.datetime(2016, 5, 5, 0, 0)
 # 
-#     the_time_moment = datetime.datetime(2016, 5, 4, 12, 0) 
+#     the_time_moment = datetime.datetime(2016, 5, 4, 12, 20) 
 #     the_second_time_moment = datetime.datetime(2016, 5, 4, 18, 45) 
 # =============================================================================
     
+    
+    model_datetime = datetime.datetime(2016, 6, 12, 0, 0)
+    event_finish_datetime = datetime.datetime(2016, 6, 12, 18, 0)
+
+    the_time_moment = datetime.datetime(2016, 6, 12, 8, 45) 
+    the_second_time_moment = datetime.datetime(2016, 6, 12, 14, 00)     
+
     
 # =============================================================================
 #     model_datetime = datetime.datetime(2016, 5, 11, 18, 0)
@@ -364,15 +418,17 @@ def main():
 # =============================================================================
     
     
-    model_datetime = datetime.datetime(2016, 6, 11, 0, 0)
-    event_finish_datetime = datetime.datetime(2016, 6, 12, 0, 0)
-
-    the_time_moment = datetime.datetime(2016, 6, 11, 8, 30) 
-    the_second_time_moment = datetime.datetime(2016, 6, 11, 9, 50)     
-    the_third_time_moment  = datetime.datetime(2016, 6, 11, 10, 5)     
-    the_fourth_time_moment = datetime.datetime(2016, 6, 11, 11, 10) 
-
-    the_time_moment  = datetime.datetime(2016, 6, 11, 8, 30)  
+# =============================================================================
+#     model_datetime = datetime.datetime(2016, 6, 11, 0, 0)
+#     event_finish_datetime = datetime.datetime(2016, 6, 12, 0, 0)
+# 
+#     the_time_moment = datetime.datetime(2016, 6, 11, 10, 5)  
+#     the_second_time_moment = datetime.datetime(2016, 6, 11, 9, 50)     
+#     the_third_time_moment  = datetime.datetime(2016, 6, 11, 10, 5)     
+#     the_fourth_time_moment = datetime.datetime(2016, 6, 11, 11, 10) 
+# 
+#     the_time_moment  = datetime.datetime(2016, 6, 11, 11, 10)  
+# =============================================================================
 
 
     the_second_time_moment  = the_time_moment
@@ -389,11 +445,7 @@ def main():
     
           
 
-    z_index_max = 20;   # it's the maximal index of height: 20 corresponds to approximately  10.2 km
-
-
-
-  #  "event_datetime" could have any value from modelled time, or just be equal to "model_datetime"
+   #  "event_datetime" could have any value from modelled time, or just be equal to "model_datetime"
 #    event_datetime = datetime.datetime(2016, 4, 26, 12, 00)     
     event_datetime = model_datetime
     
@@ -419,12 +471,12 @@ def main():
 # =============================================================================
     
     
-    z_array = np.zeros([21,z_index_max])
-    x_array = np.zeros([21,z_index_max])
-    for j_x in range(35, 56):
+    z_array = np.zeros([x_max - x_min, z_index_max])
+    x_array = np.zeros([x_max - x_min, z_index_max])
+    for j_x in range(x_min, x_max):
 #        print (j_x)    
-        z_array[j_x-35,:] = get_height(model_datetime, j_x)[:z_index_max]/1000.
-        x_array[j_x-35,:] = np.ones([z_index_max]) * j_x - 45
+        z_array[j_x - x_min,:] = get_height(model_datetime, j_x)[:z_index_max]/1000.
+        x_array[j_x - x_min,:] = np.ones([z_index_max]) * j_x - 45
         
         
    # let's try to determine time and height values properly     
@@ -433,8 +485,8 @@ def main():
     time_vector = [event_datetime + datetime.timedelta(minutes=wrf_step_minutes * i) for i in range(number_of_time_points)]    
     
    # name_array = ["QCLOUD", "QGRAUP", "QICE",  "QRAIN", "QSNOW","QVAPOR"]
-   # name_array = ["QCLOUD", "QGRAUP", "QICE",  "QRAIN", "QSNOW"]
-    name_array = ["QSNOW",  "QRAIN",  "QICE", "QGRAUP", "QCLOUD", "QHAIL"]
+    name_array = ["QCLOUD", "QGRAUP", "QICE",  "QRAIN", "QSNOW"]
+   # name_array = ["QSNOW",  "QRAIN",  "QICE", "QGRAUP", "QCLOUD", "QHAIL"]
   #  height_for_wind_indexes_array = [0, 4, 5, 6, 7, 8, 10, 12, 13, 14, 15, 16, 17]
   
       
@@ -461,9 +513,6 @@ def main():
     plt.legend(fontsize=20,loc=1)
     plt.show()
     
-       
-    
-    z_index_max = 20;   # it's the maximal index of height: 20 corresponds to approximately  10.2 km
 
 
 
@@ -481,7 +530,7 @@ def main():
     
 #    number_of_time_points = 25; 
 
-    charge = 0.5*10**(-6);     
+    charge = 0.5*10**(-3);     
     
 # =============================================================================
 #     z_array = np.zeros([90,z_index_max])  
@@ -491,14 +540,8 @@ def main():
 #         z_array[j_x,:] = get_height(model_datetime, j_x)[:z_index_max]/1000.
 #         x_array[j_x,:] = np.ones([z_index_max]) * j_x - 45
 # =============================================================================
-    
-    
-    z_array = np.zeros([21,z_index_max])
-    x_array = np.zeros([21,z_index_max])
-    for j_x in range(35, 56):
-        print (j_x)    
-        z_array[j_x-35,:] = get_height(model_datetime, j_x)[:z_index_max]/1000.
-        x_array[j_x-35,:] = np.ones([z_index_max]) * j_x - 45
+
+        
 # =============================================================================
 #     plt.figure(figsize=(18,8))
 #     plt.title('Value opposite to the dry air density, ground level' , fontsize=22)
@@ -532,7 +575,7 @@ def main():
     
         
         plt.figure(figsize=(18,8))
-        picture_mass = plt.contourf(time_vector, z_vector, np.array(get_q(z_index_max, model_datetime, model_period, model_length, event_datetime, name, number_of_time_points)).transpose())   
+        picture_mass = plt.contourf(time_vector, z_vector, np.array(get_mass_density(z_index_max, model_datetime, model_period, model_length, event_datetime, name, number_of_time_points)).transpose())   
         plt.colorbar(picture_mass, format =  "%0.6f" ) 
         plt.title('Density: '+ name, fontsize=22)
         plt.xlabel('time', fontsize=20, horizontalalignment='right' )
@@ -555,7 +598,7 @@ def main():
 
    #  print (z_array)  
      
-        picture2 =  plt.contourf(x_array, z_array, np.array(   get_q_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, name )))
+        picture2 =  plt.contourf(x_array, z_array, np.array(    get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, name )))
         plt.colorbar(picture2, format =  "%0.6f") 
         plt.title('Density: '+ name + '  '+ str(the_time_moment), fontsize=22)
         plt.xlabel('x, km', fontsize=20, horizontalalignment='right' )
@@ -579,21 +622,20 @@ def main():
     
     
  # let's draw the sum of fields, created by two kinds of cloud-particles
-    name1 = "QCLOUD"
+    name1 = "QSNOW"
     name2 = "QGRAUP"
-    charge1 = -1*10**(-5);
-    charge2 = +3*10**(-5);
+    charge1 = +8*10**(-3);
+    charge2 = -3*10**(-3);
     plt.figure(figsize=(14,8)) 
-    sum_of_fields = np.array(el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, event_datetime, name1, charge1, number_of_time_points)) + np.array(el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, event_datetime, name2, charge2, number_of_time_points))
+    sum_of_fields = 10**(-3)*(np.array(el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, event_datetime, name1, charge1, number_of_time_points)) + np.array(el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, event_datetime, name2, charge2, number_of_time_points)))
     plt.plot(time_vector, sum_of_fields)
     plt.title('Electric field created by '+ name1 + ' and ' + name2, fontsize=22)
     plt.xlabel('time', fontsize=20, horizontalalignment='right' )
-    plt.ylabel('El_field, some_unit', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+    plt.ylabel(r'$\frac{kV}{m}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
     plt.xlim(time_vector[0], time_vector[-1] )    
-    plt.ylim(-8, 8 )   
+  #  plt.ylim(-8, 8 )   
     plt.show()
-    
-    
+  
     
 
  # let's draw the sum of fields, created by three kinds of cloud-particles
