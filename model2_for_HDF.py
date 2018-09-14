@@ -32,10 +32,10 @@ z_index_max = 20;   # it's the maximal index of height: 20 corresponds to approx
 
 #current_folder = '/mnt/data-internal/reanalysis'    # this is the folder for the 2018-03-05 event
 
-#current_folder = '/mnt/data-internal/newversion'
+current_folder = '/mnt/data-internal/newversion'
 #current_folder = '/mnt/data-internal/Mansell'
 
-current_folder = '/mnt/data-internal/RDA_DS083.3'
+#current_folder = '/mnt/data-internal/RDA_DS083.3/TOMPH'
 
 # this function is used in other files        
 # =============================================================================
@@ -188,6 +188,30 @@ def get_aux_speed_array(array_from_get_wind, aux_speed_height_number):
 
 
 
+def get_ew_wind_xz(model_datetime, model_period, model_length, event_datetime, z_index_max):
+    time_index = get_index(model_datetime, model_period, model_length, event_datetime, 0)
+    file = get_wrf_file(model_datetime)
+#    u = file.variables['U'].data[:, :, :, :-1] 
+    u = wrf.getvar(file, 'U', None, meta=False)
+    return u[time_index,  0:z_index_max, y_lat, x_min:x_max].transpose()
+
+# =============================================================================
+# def get_ns_wind_xz(model_datetime, model_period, model_length, event_datetime, z_index_max):
+#     time_index = get_index(model_datetime, model_period, model_length, event_datetime, 0)
+#     file = get_wrf_file(model_datetime)
+#     u = file.variables['V'].data[:, :, :, :-1] 
+#     return u[time_index,  0:z_index_max, y_lat, x_min:x_max].transpose()
+# =============================================================================
+
+def get_vertical_wind_xz(model_datetime, model_period, model_length, event_datetime, z_index_max):
+    time_index = get_index(model_datetime, model_period, model_length, event_datetime,  0)
+    file = get_wrf_file(model_datetime)
+#    w_wind = file.variables['W'].data[:, :, :, :-1]
+    w_wind = wrf.getvar(file, 'W', None, meta=False)
+    return w_wind[time_index,  0:z_index_max, y_lat, x_min:x_max].transpose()
+
+
+
 def get_s_pressure(model_datetime, model_period, model_length, event_datetime, number_of_time_points=1):
     '''
     get surface pressure
@@ -317,7 +341,7 @@ def el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, 
     el_field_int_z_t = [0] * number_of_time_points
     for j in range(2, number_of_time_points):
      #   for z_sum_index in range(0, 40):
-        for z_sum_index in range(0, z_index_max):
+        for z_sum_index in range(2, z_index_max):
             el_field_int_z_t[j] += vapor_tz[j, z_sum_index]/((z_vector[z_sum_index])**2)
         el_field_int_z_t[j] *= charge
     return el_field_int_z_t
@@ -383,11 +407,13 @@ def main():
 # =============================================================================
     
     
-    model_datetime = datetime.datetime(2016, 6, 12, 0, 0)
-    event_finish_datetime = datetime.datetime(2016, 6, 12, 18, 0)
-
-    the_time_moment = datetime.datetime(2016, 6, 12, 8, 45) 
-    the_second_time_moment = datetime.datetime(2016, 6, 12, 14, 00)     
+# =============================================================================
+#     model_datetime = datetime.datetime(2016, 5, 4, 0, 0)
+#     event_finish_datetime = datetime.datetime(2016, 5, 5, 0, 0)
+# 
+#     the_time_moment = datetime.datetime(2016, 5, 4, 19, 10) 
+#     the_second_time_moment = datetime.datetime(2016, 5, 4, 15, 00)     
+# =============================================================================
 
     
 # =============================================================================
@@ -404,31 +430,19 @@ def main():
 # =============================================================================
 #     model_datetime = datetime.datetime(2016, 10, 29, 0)
 #     event_finish_datetime = datetime.datetime(2016, 10, 30, 12)
-#     the_time_moment = datetime.datetime(2016, 10, 29, 22, 10)
+#     the_time_moment = datetime.datetime(2016, 10, 29, 7, 0)
 #     the_second_time_moment  =  datetime.datetime(2016, 10, 29, 22, 10)
 # =============================================================================
   
+   
+    
+    model_datetime = datetime.datetime(2016, 6, 11, 0, 0)
+    event_finish_datetime = datetime.datetime(2016, 6, 12, 0, 0)
 
-# =============================================================================
-#     model_datetime = datetime.datetime(2016, 10, 29, 0, 0)
-#     event_finish_datetime = datetime.datetime(2016, 10, 30, 12, 0)
-# 
-#     the_time_moment = datetime.datetime(2016, 10, 29, 18, 30) 
-#     the_second_time_moment = datetime.datetime(2016, 10, 29, 22, 0) 
-# =============================================================================
-    
-    
-# =============================================================================
-#     model_datetime = datetime.datetime(2016, 6, 11, 0, 0)
-#     event_finish_datetime = datetime.datetime(2016, 6, 12, 0, 0)
-# 
-#     the_time_moment = datetime.datetime(2016, 6, 11, 10, 5)  
-#     the_second_time_moment = datetime.datetime(2016, 6, 11, 9, 50)     
-#     the_third_time_moment  = datetime.datetime(2016, 6, 11, 10, 5)     
-#     the_fourth_time_moment = datetime.datetime(2016, 6, 11, 11, 10) 
-# 
-#     the_time_moment  = datetime.datetime(2016, 6, 11, 11, 10)  
-# =============================================================================
+    the_time_moment = datetime.datetime(2016, 6, 11, 9, 50)  
+    the_second_time_moment = datetime.datetime(2016, 6, 11, 9, 50)     
+    the_third_time_moment  = datetime.datetime(2016, 6, 11, 10, 5)     
+    the_fourth_time_moment = datetime.datetime(2016, 6, 11, 11, 10) 
 
 
     the_second_time_moment  = the_time_moment
@@ -488,8 +502,105 @@ def main():
     name_array = ["QCLOUD", "QGRAUP", "QICE",  "QRAIN", "QSNOW"]
    # name_array = ["QSNOW",  "QRAIN",  "QICE", "QGRAUP", "QCLOUD", "QHAIL"]
   #  height_for_wind_indexes_array = [0, 4, 5, 6, 7, 8, 10, 12, 13, 14, 15, 16, 17]
+   
   
+# =============================================================================
+#     vector_T_above_the_station = get_t_profile_in_certain_moment_of_time(z_index_max, model_datetime, model_period, model_length, the_time_moment) 
+#     vector_LWC_above_the_station = get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, 'QCLOUD')[x_lon - x_min]
+#     array_LWC = get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, 'QCLOUD')
+#     
+#     print('len(vector_T_above_the_station ) = ', len(vector_T_above_the_station ))
+#     print('len(vector_LWC_above_the_station) = ', len(vector_LWC_above_the_station))
+# #    print(len(array_LWC))
+#     print('z_index_max = ', z_index_max)
+# =============================================================================
+
+
+    x_delta = 3
+    x_index = x_lon - x_min + x_delta
+    
+    curves_names = ['Saunders et al 2006', 'Pereyra et al. 2000', 'Takahashi 1978', 'Saunders and Peck 1998']
+    curves_colors = [(0.5, 0, 0.9, 1), (0., 0, 1, 1), (0., 0.6, 0., 1), (0.9, 0.3, 0, 1)]
+    curves_styles = ['-','-.',':','--']
+    
+    curves_array_T = []; curves_array_LWC = []
+    
+    curves_array_T.append ( [-18, -16, -14.6, -13.5, -13, -12.7, -13,  -14, -16, -18 ]) 
+    curves_array_LWC.append( [0.1, 0.39, 0.6, 0.92, 1.25, 1.6, 2.0, 2.55, 3.05, 3.6] )
+    
+    curves_array_T.append ([-18, -14.5, -13.7, -13.4, -13.5, -14.5, -18, -21, -24.5 ])
+    curves_array_LWC.append ( [0.1, 0.45, 0.6, 0.8, 0.92, 1.25, 1.95, 2.5, 3.0 ] )
+    
+    curves_array_T.append ([-30, -25, -21, -18, -13.5, -11.3, -9.5, -8.85, -8.9, -10.7, -13.7, -17.9, -21, -25, -30 ])
+    curves_array_LWC.append ( [0.08, 0.09, 0.12, 0.16, 0.26, 0.4, 0.58, 0.75, 0.95, 1.25, 1.6, 1.85, 2.04, 2.15, 2.2] )
       
+    curves_array_T.append ([-30, -26.6, -25, -24.5, -22.0, -21.0, -19.1, -18, -16, -14.6, -13.5, -12.5, -10.0, -5.0, -2.5 ])
+    curves_array_LWC.append ( [0.6, 1.0, 1.15, 1.17, 1.1, 1.0, 0.85, 0.77, 0.64, 0.59,  0.54, 0.48, 0.4, 0.38, 0.37] )
+    
+    plt.figure(figsize=(16,10))
+    for curve_number in range (0, len(curves_array_T)):
+        plt.plot(curves_array_T[curve_number], curves_array_LWC[curve_number], linewidth=4, label = curves_names[curve_number], color =  curves_colors[curve_number], linestyle = curves_styles[curve_number])
+    plt.title('Diagram for Reverse_Curve', fontsize=22)
+    plt.xlabel('T, C', fontsize=20, horizontalalignment='right' )
+    plt.ylabel('LWC,' + r'$\frac{gr}{m^3}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+    plt.legend(fontsize=20,loc=2)
+    plt.axis('normal')    
+    plt.xlim(0, -30)  # decreasing temperature
+    plt.ylim(0, 4)  # decreasing time 
+    plt.show()  
+    
+    
+    
+    plt.figure(figsize=(16,10))
+    for curve_number in range (0, len(curves_array_T)):
+        plt.plot(curves_array_T[curve_number], curves_array_LWC[curve_number], linewidth=4, label = curves_names[curve_number], color =  curves_colors[curve_number], linestyle = curves_styles[curve_number])
+    plt.plot(get_t_profile_in_certain_moment_of_time(z_index_max, model_datetime, model_period, model_length, the_time_moment), 10**(3)*get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, 'QCLOUD')[x_index], linewidth=4, label = 'QCLOUD '+str(the_time_moment), color =  (0, 0, 0, 0.7), linestyle = '--')   
+    plt.plot(get_t_profile_in_certain_moment_of_time(z_index_max, model_datetime, model_period, model_length, the_time_moment), 10**(3)*(get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, 'QCLOUD')[x_index] + get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, 'QRAIN')[x_index]), linewidth=4, label = 'QCLOUD + QRAIN ' + str(the_time_moment), color = (0,0,0,1))
+    plt.title('Diagram for Reverse_Curve', fontsize=22)
+    plt.xlabel('T, C', fontsize=20, horizontalalignment='right' )
+    plt.ylabel('LWC,' + r'$\frac{gr}{m^3}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+    plt.legend(fontsize=20,loc=2)
+    plt.axis('normal')    
+    plt.xlim(0, -30)  # decreasing temperature
+    plt.ylim(0, 4)  # decreasing time 
+    plt.show()     
+    
+    
+    
+    
+    
+    
+    
+    
+#    plt.figure(figsize=(18,8))
+#    picture_T_LWC_cloud_rain =  plt.plot(get_t_profile_in_certain_moment_of_time(z_index_max, model_datetime, model_period, model_length, the_time_moment), 10**(3)*(get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, 'QCLOUD')[x_index] + get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, 'QRAIN')[x_index]), linewidth=3, label = str(the_time_moment), color =  (1, 0.4, 0, 1))   
+#    plt.title('Diagram for Reverse_Curve '+ str(the_time_moment) + ', QCLOUD + QRAIN', fontsize=22)
+#    plt.xlabel('T, C', fontsize=20, horizontalalignment='right' )
+#    plt.ylabel('LVC,' + r'$\frac{gr}{m^3}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+#    plt.axis('normal')    
+#    plt.show() 
+    
+  
+#    wind_array_ew_xz = get_ew_wind_xz(model_datetime, model_period, model_length, the_time_moment, z_index_max);
+    wind_array_ew_xz = get_ew_wind_xz(model_datetime, model_period, model_length, the_time_moment, z_index_max);
+    wind_array_vertical_xz = get_vertical_wind_xz(model_datetime, model_period, model_length, the_time_moment, z_index_max);
+    M = 0.1 / np.sqrt(wind_array_ew_xz**2 + wind_array_vertical_xz**2)
+    N = np.sqrt(wind_array_ew_xz**2 + wind_array_vertical_xz**2)
+    plt.rc('xtick', labelsize=18) 
+    plt.rc('ytick', labelsize=18) 
+    pic_wind_xz_with_arrows = plt.figure(figsize=(18,8))
+    plt.title("pivot='mid'; every third arrow; units='inches'")
+    widths = np.linspace(0, 1, 100)
+    wind_z_points = [5,6,7,8, 9,10, 11,12,13,14, 15,16, 17,18, 19]
+    Q = plt.quiver(x_array[:, wind_z_points], z_array[:, wind_z_points],  M[:,wind_z_points] * wind_array_ew_xz[:, wind_z_points],  M[:,wind_z_points] * wind_array_vertical_xz[:, wind_z_points], N[:,wind_z_points], cmap=plt.cm.YlGnBu)
+#    Q = plt.streamplot(x_array[0, :], z_array[:, 0],  wind_array_ew_xz[:, :],  wind_array_vertical_xz[:, :])
+    qk = plt.quiverkey(Q, 0.9, 0.9, 2, r'$2 \frac{m}{s}$', labelpos='E', coordinates='figure')
+    plt.scatter(x_array, z_array, color='r', s=5)
+    plt.xlabel('x, km', fontsize=20, horizontalalignment='right' )
+    plt.ylabel('z, km', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+    plt.colorbar(Q) 
+    plt.show()
+
     
     
     plt.figure(figsize=(18,8))
@@ -624,8 +735,8 @@ def main():
  # let's draw the sum of fields, created by two kinds of cloud-particles
     name1 = "QSNOW"
     name2 = "QGRAUP"
-    charge1 = +8*10**(-3);
-    charge2 = -3*10**(-3);
+    charge1 = -40*10**(1);
+    charge2 = 120*10**(1);
     plt.figure(figsize=(14,8)) 
     sum_of_fields = 10**(-3)*(np.array(el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, event_datetime, name1, charge1, number_of_time_points)) + np.array(el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, event_datetime, name2, charge2, number_of_time_points)))
     plt.plot(time_vector, sum_of_fields)

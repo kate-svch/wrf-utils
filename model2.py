@@ -33,8 +33,6 @@ z_index_max = 20;   # it's the maximal index of height: 20 corresponds to approx
 current_folder = '/mnt/data-internal/newversion'
 #current_folder = '/mnt/data-internal/Mansell'
 
-#current_folder = '/mnt/data-internal/newversion/forecast'
-
 #current_folder = '/mnt/data-internal/RDA_DS083.3'
 
 
@@ -360,7 +358,7 @@ def el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, 
     el_field_int_z_t = [0] * number_of_time_points
     for j in range(0, number_of_time_points):
      #   for z_sum_index in range(0, 40):
-        for z_sum_index in range(0, z_index_max):
+        for z_sum_index in range(1, z_index_max):
             el_field_int_z_t[j] += vapor_tz[j, z_sum_index]/((z_vector[z_sum_index])**2)
         el_field_int_z_t[j] *= charge
     return el_field_int_z_t
@@ -421,9 +419,12 @@ def main():
 #     model_datetime = datetime.datetime(2016, 5, 4, 0, 0)
 #     event_finish_datetime = datetime.datetime(2016, 5, 5, 0, 0)
 # 
-#     the_time_moment = datetime.datetime(2016, 5, 4, 12, 0) 
-#     the_second_time_moment = datetime.datetime(2016, 5, 4, 18, 45) 
+#     the_time_moment = datetime.datetime(2016, 5, 4, 11, 0) 
+#     the_second_time_moment = datetime.datetime(2016, 5, 4, 15, 00)     
 # =============================================================================
+
+#    the_time_moment = datetime.datetime(2016, 5, 4, 19, 10) 
+#    the_second_time_moment = datetime.datetime(2016, 5, 4, 18, 45) 
     
     
 # =============================================================================
@@ -438,32 +439,32 @@ def main():
     
     
 # =============================================================================
+#     model_datetime = datetime.datetime(2016, 4, 26, 12, 0)
+#     event_finish_datetime = datetime.datetime(2016, 4, 29, 0, 0)
+# 
+#     the_time_moment = datetime.datetime(2016, 4, 28, 2, 0) 
+#     the_second_time_moment = datetime.datetime(2016, 4, 28, 2, 0) 
+# =============================================================================
+    
+    
+    
+    
+# =============================================================================
 #     model_datetime = datetime.datetime(2016, 10, 29, 0)
 #     event_finish_datetime = datetime.datetime(2016, 10, 30, 12)
 #     the_time_moment = datetime.datetime(2016, 10, 29, 22, 10)
 #     the_second_time_moment  =  datetime.datetime(2016, 10, 29, 22, 10)
 # =============================================================================
-  
-
-# =============================================================================
-#     model_datetime = datetime.datetime(2016, 10, 29, 0, 0)
-#     event_finish_datetime = datetime.datetime(2016, 10, 30, 12, 0)
-# 
-#     the_time_moment = datetime.datetime(2016, 10, 29, 18, 30) 
-#     the_second_time_moment = datetime.datetime(2016, 10, 29, 22, 0) 
-# =============================================================================
-    
+     
     
     model_datetime = datetime.datetime(2016, 6, 11, 0, 0)
     event_finish_datetime = datetime.datetime(2016, 6, 12, 0, 0)
 
-    the_time_moment = datetime.datetime(2016, 6, 11, 8, 30) 
+    the_time_moment = datetime.datetime(2016, 6, 11, 11, 10) 
     the_second_time_moment = datetime.datetime(2016, 6, 11, 9, 50)     
     the_third_time_moment  = datetime.datetime(2016, 6, 11, 10, 5)     
     the_fourth_time_moment = datetime.datetime(2016, 6, 11, 11, 10) 
     the_fifth_time_moment = datetime.datetime(2016, 5, 12, 14, 45) 
-
-    the_time_moment  = datetime.datetime(2016, 6, 11, 11, 10)  
 
 
     the_second_time_moment  = the_time_moment
@@ -671,7 +672,7 @@ def main():
 #     plt.show()
 #     
 #     
-#     plt.figure(figsize=(18,8))
+#     plt.figure(figsize=(18,8))#    plt.ylim(-8, 8 )  
 #     plt.title('Pressure in time, ground level' , fontsize=22)
 #     plt.xlabel('time', fontsize=20, horizontalalignment='right' )
 #     plt.ylabel('kPa', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
@@ -792,6 +793,7 @@ def main():
 
    #  print (z_array)  
      
+        plt.figure(figsize=(18,8))        
         picture2 =  plt.contourf(x_array, z_array, np.array(   get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, name )))
         plt.colorbar(picture2, format =  "%0.6f") 
         plt.title('Density: '+ name + '  '+ str(the_time_moment), fontsize=22)
@@ -815,8 +817,8 @@ def main():
     
     
         time_length = len(time_vector)
-        time_start_index =  time_length*4//9;
-        time_finish_index =  time_length*3//5;
+        time_start_index =  time_length*16//36;
+        time_finish_index =  time_length*29//36;
     
     
     
@@ -831,34 +833,34 @@ def main():
    
 
     
-# =============================================================================
-#     the_time_moment = the_second_time_moment;
-#     
-#     
-#     picture_ns_wind_xz =  plt.contourf(x_array, z_array, np.array(get_ns_wind_xz(model_datetime, model_period, model_length, the_time_moment, z_index_max)))
-#     plt.colorbar(picture_ns_wind_xz, format =  "%1.0f") 
-#     plt.title('South-North wind, ' + '  '+ str(the_time_moment), fontsize=22)
-#     plt.xlabel('x, km', fontsize=20, horizontalalignment='right' )
-#     plt.ylabel('z, km', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-#     plt.axis('normal')    
-#     plt.show()
-#     
-#     picture_ew_wind_xz =  plt.contourf(x_array, z_array, np.array(get_ew_wind_xz(model_datetime, model_period, model_length, the_time_moment, z_index_max)))
-#     plt.colorbar(picture_ew_wind_xz, format =  "%1.0f") 
-#     plt.title('West-East wind, ' + '  '+ str(the_time_moment), fontsize=22)
-#     plt.xlabel('x, km', fontsize=20, horizontalalignment='right' )
-#     plt.ylabel('z, km', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-#     plt.axis('normal')    
-#     plt.show()
-#     
-#     picture_vertical_wind_xz =  plt.contourf(x_array, z_array, np.array(get_vertical_wind_xz(model_datetime, model_period, model_length, the_time_moment, z_index_max)))
-#     plt.colorbar(picture_vertical_wind_xz, format =  "%1.0f") 
-#     plt.title('Vertical wind, ' + '  '+ str(the_time_moment), fontsize=22)
-#     plt.xlabel('x, km', fontsize=20, horizontalalignment='right' )
-#     plt.ylabel('z, km', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-#     plt.axis('normal')    
-#     plt.show()
-# =============================================================================
+#    the_time_moment = the_second_time_moment;
+    
+    plt.figure(figsize=(18,8))
+    picture_ns_wind_xz =  plt.contourf(x_array, z_array, np.array(get_ns_wind_xz(model_datetime, model_period, model_length, the_time_moment, z_index_max)))
+    plt.colorbar(picture_ns_wind_xz, format =  "%1.0f") 
+    plt.title('South-North wind, ' + '  '+ str(the_time_moment), fontsize=22)
+    plt.xlabel('x, km', fontsize=20, horizontalalignment='right' )
+    plt.ylabel('z, km', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+    plt.axis('normal')    
+    plt.show()
+    
+    plt.figure(figsize=(18,8))
+    picture_ew_wind_xz =  plt.contourf(x_array, z_array, np.array(get_ew_wind_xz(model_datetime, model_period, model_length, the_time_moment, z_index_max)))
+    plt.colorbar(picture_ew_wind_xz, format =  "%1.0f") 
+    plt.title('West-East wind, ' + '  '+ str(the_time_moment), fontsize=22)
+    plt.xlabel('x, km', fontsize=20, horizontalalignment='right' )
+    plt.ylabel('z, km', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+    plt.axis('normal')    
+    plt.show()
+    
+    plt.figure(figsize=(18,8))
+    picture_vertical_wind_xz =  plt.contourf(x_array, z_array, np.array(get_vertical_wind_xz(model_datetime, model_period, model_length, the_time_moment, z_index_max)))
+    plt.colorbar(picture_vertical_wind_xz, format =  "%1.0f") 
+    plt.title('Vertical wind, ' + '  '+ str(the_time_moment), fontsize=22)
+    plt.xlabel('x, km', fontsize=20, horizontalalignment='right' )
+    plt.ylabel('z, km', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+    plt.axis('normal')    
+    plt.show()
     
   
     
@@ -866,20 +868,33 @@ def main():
  # let's draw the sum of fields, created by two kinds of cloud-particles
     name1 = "QSNOW"
     name2 = "QGRAUP"
-    charge1 = -2*10**(-2);
-    charge2 = +1*10**(-2);
-    plt.figure(figsize=(14,8)) 
+    charge1 = -0.2*10**(1);
+    charge2 = 4*10**(1);
+    plt.figure(figsize=(8,16))
     sum_of_fields = 10**(-3)*(np.array(el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, event_datetime, name1, charge1, number_of_time_points)) + np.array(el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, event_datetime, name2, charge2, number_of_time_points)))
     plt.plot(time_vector, sum_of_fields)
     plt.title('Electric field created by '+ name1 + ' and ' + name2, fontsize=22)
     plt.xlabel('time', fontsize=20, horizontalalignment='right' )
     plt.ylabel(r'$\frac{kV}{m}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-    plt.xlim(time_vector[0], time_vector[-1] )    
-#    plt.ylim(-8, 8 )   
+#    plt.xlim(time_vector[0], time_vector[-1] )    
+    plt.xlim(time_vector[time_start_index], time_vector[time_finish_index] )   
+    plt.ylim(-8, 8 )     
     plt.show()
     
     
-    
+    name1 = "QSNOW"
+    name2 = "QGRAUP"
+    plt.figure(figsize=(14,8)) 
+    plt.plot(time_vector, 10**(-3)*(np.array(el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, event_datetime, name1, charge1, number_of_time_points))), label = name1)
+    plt.plot(time_vector, 10**(-3)*( np.array(el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, event_datetime, name2, charge2, number_of_time_points))), label = name2)
+    plt.title('Electric fields created by '+ name1 + ' and ' + name2, fontsize=22)
+    plt.xlabel('time', fontsize=20, horizontalalignment='right' )
+    plt.ylabel(r'$\frac{kV}{m}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+#    plt.xlim(time_vector[0], time_vector[-1] )    
+    plt.xlim(time_vector[time_start_index], time_vector[time_finish_index] )   
+    plt.ylim(-40, 40 )   
+    plt.legend(fontsize=20,loc=1)
+    plt.show()   
 
  # let's draw the sum of fields, created by three kinds of cloud-particles
 # =============================================================================
