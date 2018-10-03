@@ -11,14 +11,16 @@ import matplotlib.pyplot as plt
 import datetime
 from scipy.io import netcdf
 import wrf
+from wrf import getvar, vinterp
 
 from wrf import getvar, ALL_TIMES
 from netCDF4 import Dataset
 
+
 x_lon = 45                                                                  # Index to d02 Aragats point
 y_lat = 45                                                                  # Index to d02 Aragats point
-#x_min = 35; x_max = 56; 
-x_min = 39; x_max = 52;  # it's borders of the drawn area for xz-diagrams
+x_min = 44; x_max = 47; 
+#x_min = 39; x_max = 52;  # it's borders of the drawn area for xz-diagrams
 z_index_max = 20;   # it's the maximal index of height: 20 corresponds to approximately  10.2 km
 
            
@@ -44,7 +46,7 @@ current_folder = '/mnt/data-internal/newversion'
 # #     global model_length
 #      model_datetime = new_model_datetime
 #      model_period = datetime.timedelta(minutes=new_model_period)
-#      file = get_wrf_file(model_datetime)
+#      file = get_wrf_file(model_datetime)x
 #      variable = file.variables['T2'].data[:]
 #      model_length = len(variable[:, y_lat, x_lon])
 # =============================================================================
@@ -64,16 +66,31 @@ def get_wrf_file(model_datetime):
     
 def get_height(model_datetime, x_here):
      file = get_wrf_file(model_datetime)
-     base_geopot = file.variables['PHB'].data[:]
-     pert_geopot = file.variables['PH'].data[:]
-     height = (base_geopot + pert_geopot) / 9.81
-     temp_height = height[0, :, y_lat, x_here]
+ #    base_geopot = file.variables['PHB'].data[:]
+ #    pert_geopot = file.variables['PH'].data[:]
+ #    height = (base_geopot + pert_geopot) / 9.81
+     height = getvar(file, 'z', meta = False)
+     temp_height = height[:, y_lat, x_here]
      # "ground_height" is the minimal considered value of the altitude: it defines "zero-value" of "z"  (in metres)
-     ground_height = height[0, 0, y_lat, x_lon]
+     ground_height = height[0, y_lat, x_lon]
      for current_index in range (0, len(temp_height)):
          temp_height[current_index] += -ground_height + 2
      return temp_height
  
+    
+def get_height_for_y(model_datetime, y_here):
+     file = get_wrf_file(model_datetime)
+ #    base_geopot = file.variables['PHB'].data[:]
+ #    pert_geopot = file.variables['PH'].data[:]
+ #    height = (base_geopot + pert_geopot) / 9.81
+     height = getvar(file, 'z', meta = False)
+     temp_height = height[:, y_here, x_lon]
+     # "ground_height" is the minimal considered value of the altitude: it defines "zero-value" of "z"  (in metres)
+     ground_height = height[0, y_lat, x_lon]
+     for current_index in range (0, len(temp_height)):
+         temp_height[current_index] += -ground_height + 2
+     return temp_height    
+    
     
     
 # it's almost the same as get_height
@@ -85,7 +102,7 @@ def get_height(model_datetime, x_here):
 #     temp_phb = file.variables['PHB'].data[:]
 #     supposed_mountain_height = [3200] * 40
 #     temp_height = ((temp_ph[time_index+ time_point_of_start, 0:(-1), y_lat, x_lon] + temp_phb[time_index+ time_point_of_start, 0:(-1), y_lat, x_lon])/9.81) - supposed_mountain_height
-#     return temp_height/1000
+#     return temp_height/1000x_min = 39; x_max = 52;  # it's borders of the drawn area for xz-diagrams
 # =============================================================================
 
 
@@ -277,7 +294,7 @@ def get_q_xz(z_index_max, model_datetime, model_period, model_length, the_time_m
     time_index = get_index(model_datetime, model_period, model_length, the_time_moment, 1)
     file = get_wrf_file(model_datetime)
     vapor = file.variables[name].data[:] / 1    
-#    vapor_xz = vapor[time_index , :, y_lat, :] 
+#    vapor_xz = vapor[time_index , :, y_lat, :]  x_min = 39; x_max = 52;  # it's borders of the drawn area for xz-diagrams
    # let's discover only the certain region along x-axis! 
     vapor_xz = vapor[time_index , 0:z_index_max, y_lat, x_min:x_max]    
     #vapor_xz = vapor[time_index , 0:z_index_max, y_lat, :]    
@@ -303,6 +320,23 @@ def get_mass_density_xz(z_index_max, model_datetime, model_period, model_length,
     # let's transpose this array to have z-coordinate as the ordinate   
     vapor_xz = vapor_xz.transpose() 
     return vapor_xz
+
+
+def get_mass_density_yz(z_index_max, model_datetime, model_period, model_length, the_time_moment, name):
+      
+# get quantity of "name" microphysical fracture from 2m to 20 kilometers height: DIFFERENT HEIGHT ANG X-VALUE
+   
+    time_index = get_index(model_datetime, model_period, model_length, the_time_moment, 1)
+    file = get_wrf_file(model_datetime)
+    vapor = file.variables[name].data[:] / (file.variables['ALT'].data[:])  
+#    vapor_xz = vapor[time_index , :, y_lat, :] 
+   # let's discover only the certain region along x-axis! 
+    vapor_yz = vapor[time_index , 0:z_index_max, x_min:x_max, x_lon]    
+    #vapor_xz = vapor[time_index , 0:z_index_max, y_lat, :]    
+        # we can see, that first coordinate is abscissa
+    # let's transpose this array to have z-coordinate as the ordinate   
+    vapor_yz = vapor_yz.transpose() 
+    return vapor_yz
 
 
 
@@ -460,7 +494,7 @@ def main():
     model_datetime = datetime.datetime(2016, 6, 11, 0, 0)
     event_finish_datetime = datetime.datetime(2016, 6, 12, 0, 0)
 
-    the_time_moment = datetime.datetime(2016, 6, 11, 11, 10) 
+    the_time_moment = datetime.datetime(2016, 6, 11, 11, 0) 
     the_second_time_moment = datetime.datetime(2016, 6, 11, 9, 50)     
     the_third_time_moment  = datetime.datetime(2016, 6, 11, 10, 5)     
     the_fourth_time_moment = datetime.datetime(2016, 6, 11, 11, 10) 
@@ -480,44 +514,45 @@ def main():
 #     the_second_time_moment = datetime.datetime(2017, 9, 29, 20, 10)
 # =============================================================================
     
-          
-
-    z_index_max = 20;   # it's the maximal index of height: 20 corresponds to approximately  10.2 km
-
-
-
-  #  "event_datetime" could have any value from modelled time, or just be equal to "model_datetime"
-#    event_datetime = datetime.datetime(2016, 4, 26, 12, 00)     
-    event_datetime = model_datetime
     
     
  # here we have an automatical "numnber_of_time_points"-initialization      
+   #  "event_datetime" could have any value from modelled time, or just be equal to "model_datetime"
+    event_datetime = model_datetime
     number_of_time_points  = int ((event_finish_datetime - event_datetime)/datetime.timedelta(0, 0, 0, 0, wrf_step_minutes))  + 1
+    
+   
    
     file = get_wrf_file(model_datetime)
     variable = file.variables['T2'].data[:]
-    model_length = len(variable[:, y_lat, x_lon])  
+    model_length = len(variable[:, y_lat, x_lon])      
     
-#    number_of_time_points = 25; 
+# INTERPOLATION parameters are defined here   convert to a non-
+    
+    path = os.path.join(current_folder) + '/' 
+    path = os.path.join(path, datetime.datetime.strftime(model_datetime, '%Y%m%d%H'))
+    file_name = path  + '/wrfout_d02_'  + datetime.datetime.strftime(model_datetime, '%Y-%m-%d_%H:00:00')
+    ncfile = Dataset(file_name)
+    
+    
+    height = getvar(file, 'z', meta = False)
+    height_min =  0.12  #km
+    height_max = 8
+    mnt_from_msl = height[0, y_lat, x_lon]/1000.  # высота станции над mean sea level
+    
+    height_array_for_interp = np.arange(height_min + mnt_from_msl, height_max +mnt_from_msl, 0.02)   # in km
+    start_level = 'ght_msl' # above_mean_sea_level ; 'ght_agl' - above ground level    
+
+   
+          
+    
+
+    z_index_max = 26;   # it's the maximal index of height: 20 corresponds to approximately  10.2 km
+
+
 
     charge = 0.5*10**(-6);     
     
-# =============================================================================
-#     z_array = np.zeros([90,z_index_max])  
-#     x_array = np.zeros([90,z_index_max])
-#     for j_x in range(0, 90):
-#         print (j_x)    
-#         z_array[j_x,:] = get_height(model_datetime, j_x)[:z_index_max]/1000.
-#         x_array[j_x,:] = np.ones([z_index_max]) * j_x - 45
-# =============================================================================
-    
-    
-    z_array = np.zeros([x_max - x_min, z_index_max])
-    x_array = np.zeros([x_max - x_min, z_index_max])
-    for j_x in range(x_min, x_max):
-#        print (j_x)    
-        z_array[j_x - x_min,:] = get_height(model_datetime, j_x)[:z_index_max]/1000.
-        x_array[j_x - x_min,:] = np.ones([z_index_max]) * j_x - 45
         
         
    # let's try to determine time and height values properly     
@@ -528,9 +563,10 @@ def main():
    # name_array = ["QCLOUD", "QGRAUP", "QICE",  "QRAIN", "QSNOW","QVAPOR"]
    # name_array = ["QCLOUD", "QGRAUP", "QICE",  "QRAIN", "QSNOW"]
 #    name_array = ["QSNOW",  "QRAIN",  "QICE", "QGRAUP", "QCLOUD", "ALT"]
-    name_array = ["QSNOW",  "QRAIN",  "QICE", "QGRAUP", "QCLOUD"]
-  #  height_for_wind_indexes_array = [0, 4, 5, 6, 7, 8, 10, 12, 13, 14, 15, 16, 17]
-  
+ #   name_array = ["QSNOW",  "QRAIN",  "QICE", "QGRAUP", "QCLOUD"]
+    
+    name_array = ["QSNOW", "QGRAUP"]
+    
     height_for_wind_indexes_array = [0, 4, 5, 6, 7, 8, 10, 12, 13, 14,  15]
 
     aux_speed_height_number = 10;
@@ -541,8 +577,6 @@ def main():
     the_fifth_time_of_event_for_wind_array = [the_fifth_time_moment]*(aux_speed_height_number + 1);  
     
 
-
-  
     # the following three lines are the automatical determination of "number_of_time_points"   - the time-length of the data 
 #    file = get_wrf_file()
 #    temp_n_array = file.variables[name].data[:] / 1
@@ -552,7 +586,7 @@ def main():
 # let's determine z-values: for all the times (we hope, it doesn't really change)
 # =============================================================================
 #     model_height = get_geopotential_height(event_datetime, time_point_of_start  = 1)    
-#     event_time = create_time_array_in_hours(start_hour, event_datetime, number_of_time_points, step, time_point_of_start);
+#     event_time = create_time_array_in_hours(start_hour, event_datetime, number_of_time_Interpolation points, step, time_point_of_start);
 # =============================================================================
     
 
@@ -563,8 +597,8 @@ def main():
 # 
 #     #    z_index = 0;   # 12 leads to 5.9 km, 16 - 8 km, 20 - 10.2 km
 #         z_chosen_height = z_vector[z_index]   
-#                      
-#     
+#                      /home/kate-svch/Thunder/Aragats_measurements/py-codes
+#         ground_height = height[0, y_lat, x_lon]
 # 
 #         array_from_get_wind = get_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points)
 #         plt.figure(figsize=(18,8))
@@ -596,13 +630,13 @@ def main():
 #         plt.show()   
 # =============================================================================
 
-
+    ground_height = height[0, y_lat, x_lon]
 
 # =============================================================================         
 #         
 #         array_from_get_wind =  get_ew_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points)
 #         plt.figure(figsize=(18,8))
-#         plt.title('East-West Wind-speed in time, altitude = ' + str(z_chosen_height) + ' km' + ' (above gr.)'+ ' z_ind = ' + str(z_index), fontsize=22)
+#         plt.title('East-West Wind-speed in time, altitude = ' + str(z_chosen_height) +Interpolation  ' km' + ' (above gr.)'+ ' z_ind = ' + str(z_index), fontsize=22)
 #         plt.xlabel('time', fontsize=20, horizontalalignment='right' )
 #         plt.ylabel(r'$v, \frac{m}{s}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
 #         plt.plot(time_vector, array_from_get_wind, linewidth=3 )
@@ -725,18 +759,23 @@ def main():
 #     z_array = np.zeros([90,z_index_max])  
 #     x_array = np.zeros([90,z_index_max])
 #     for j_x in range(0, 90):
-#         print (j_x)    
+#         print (j_x)    x_array[j_x - x_min,:] = np.ones([z_index_max]) * j_x - 45
 #         z_array[j_x,:] = get_height(model_datetime, j_x)[:z_index_max]/1000.
 #         x_array[j_x,:] = np.ones([z_index_max]) * j_x - 45
 # =============================================================================
     
     
-    z_array = np.zeros([x_max - x_min,z_index_max])
+    z_array = np.zeros([x_max - x_min, z_index_max])   # it's for x-dependencies, for fixed y-value!
     x_array = np.zeros([x_max - x_min, z_index_max])
+    y_array = np.zeros([x_max - x_min, z_index_max])
+    z_for_y_array = np.zeros([x_max - x_min, z_index_max])  
+    
     for j_x in range(x_min, x_max):
-        print (j_x)    
+#        print (j_x)    
+        x_array[j_x - x_min,:] = np.ones([z_index_max]) * j_x - 45
         z_array[j_x - x_min,:] = get_height(model_datetime, j_x)[:z_index_max]/1000.
-        x_array[j_x - x_max,:] = np.ones([z_index_max]) * j_x - 45
+        y_array[j_x - x_max,:] = np.ones([z_index_max]) * j_x - 45
+        z_for_y_array[j_x - x_min,:] = get_height_for_y(model_datetime, j_x)[:z_index_max]/1000.
 # =============================================================================
 #     plt.figure(figsize=(18,8))
 #     plt.title('Value opposite to the dry air density, ground level' , fontsize=22)
@@ -747,9 +786,7 @@ def main():
 # =============================================================================
     
     
-    
-    
-    
+
     
     
     
@@ -771,7 +808,7 @@ def main():
         
         plt.figure(figsize=(18,8))
         picture_mass = plt.contourf(time_vector, z_vector, np.array(get_mass_density(z_index_max, model_datetime, model_period, model_length, event_datetime, name, number_of_time_points)).transpose())   
-        plt.colorbar(picture_mass, format =  "%0.6f" ) 
+        plt.colorbar(picture_mass, format =  "%0.6f" )
         plt.title('Density: '+ name, fontsize=22)
         plt.xlabel('time', fontsize=20, horizontalalignment='right' )
         plt.ylabel('z, km', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
@@ -793,6 +830,8 @@ def main():
 
    #  print (z_array)  
      
+ 
+   
         plt.figure(figsize=(18,8))        
         picture2 =  plt.contourf(x_array, z_array, np.array(   get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, name )))
         plt.colorbar(picture2, format =  "%0.6f") 
@@ -803,8 +842,56 @@ def main():
         plt.show()
         
         print('Integral quantity of ', name, ' is: ',  get_mass_density_integral(z_index_max, model_datetime, model_period, model_length, the_time_moment, name ))
+   
+       
+        m_density_array = getvar(ncfile, name, timeidx = get_index(model_datetime, model_period, model_length, the_time_moment, 1 ) ,  meta=False)
+        interpolated_m_dens = vinterp(ncfile, m_density_array, start_level, height_array_for_interp)
+    
+        plt.figure(figsize=(18,8))        
+ #       picture2 =  plt.contourf(height_array_for_interp, x_array, interpolated_m_dens[:,  y_lat, x_min:x_max])
+        picture2 =  plt.contourf( interpolated_m_dens[:,  y_lat, x_min:x_max])
+        plt.colorbar(picture2, format =  "%0.6f") 
+        plt.title('INTERPOLATED density: '+ name + '  '+ str(the_time_moment), fontsize=22)
+        plt.xlabel('x, ind', fontsize=20, horizontalalignment='right' )
+        plt.ylabel('z, ind', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+        plt.axis('normal')    
+        plt.show()
         
-     
+        
+        plt.figure(figsize=(18,8))        
+        picture2 =  plt.contourf(y_array, z_for_y_array, np.array(   get_mass_density_yz(z_index_max, model_datetime, model_period, model_length, the_time_moment, name )))
+        plt.colorbar(picture2, format =  "%0.6f") 
+        plt.title('YZ_Density: '+ name + '  '+ str(the_time_moment), fontsize=22)
+        plt.xlabel('y, km', fontsize=20, horizontalalignment='right' )
+        plt.ylabel('z, km', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+        plt.axis('normal')    
+        plt.show()    
+               
+        
+        plt.figure(figsize=(18,8))        
+ #       picture2 =  plt.contourf(height_array_for_interp, x_array, interpolated_m_dens[:,  y_lat, x_min:x_max])
+        picture2 =  plt.contourf( interpolated_m_dens[:,  x_min:x_max, x_lon])
+        plt.colorbar(picture2, format =  "%0.6f") 
+        plt.title('YZ_INTERPOLATED density: '+ name + '  '+ str(the_time_moment), fontsize=22)
+        plt.xlabel('y, ind', fontsize=20, horizontalalignment='right' )
+        plt.ylabel('z, ind', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+        plt.axis('normal')    
+        plt.show()
+        
+                  
+        density_3D_array =   interpolated_m_dens[:,  x_min:x_max, x_min:x_max]
+  
+ #       print(density_3D_array[:, -1, 1])
+        
+#        print(density_3D_array)
+        
+        np.save('/home/kate-svch/Thunder/Aragats_measurements/py-codes/interpolated_densities/int_dens_' + datetime.datetime.strftime(model_datetime, '%Y-%m-%d_%H:00:00') + '_' + name + '.npy', np.array(density_3D_array ))
+ #       np.save('filename.npy', np.array(density_3D_array))
+
+    
+        
+    
+    
     
 # =============================================================================
 #         plt.figure(figsize=(14,8))

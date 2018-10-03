@@ -9,7 +9,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import datetime
-from scipy.io import netcdf
+#from scipy.io import netcdf
 import wrf
 
 from wrf import getvar, ALL_TIMES
@@ -472,6 +472,11 @@ def main():
     model_length = len(variable[:, y_lat, x_lon])  
     
 #    number_of_time_points = 25; 
+   
+    
+    
+    
+    
 
     charge = 0.5*10**(-6);     
     
@@ -515,7 +520,6 @@ def main():
 #     print('z_index_max = ', z_index_max)
 # =============================================================================
 
-
     x_delta = 3
     x_index = x_lon - x_min + x_delta
     
@@ -540,10 +544,12 @@ def main():
     plt.figure(figsize=(16,10))
     for curve_number in range (0, len(curves_array_T)):
         plt.plot(curves_array_T[curve_number], curves_array_LWC[curve_number], linewidth=4, label = curves_names[curve_number], color =  curves_colors[curve_number], linestyle = curves_styles[curve_number])
-    plt.title('Diagram for Reverse_Curve', fontsize=22)
-    plt.xlabel('T, C', fontsize=20, horizontalalignment='right' )
-    plt.ylabel('LWC,' + r'$\frac{gr}{m^3}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-    plt.legend(fontsize=20,loc=2)
+#    plt.title('Diagram for Reverse_Curve', fontsize=22)
+    plt.xlabel('T, C', fontsize=25, horizontalalignment='right' )
+    plt.ylabel('LWC,' + r'$\frac{gr}{m^3}$', rotation='horizontal', fontsize=25, horizontalalignment='right', verticalalignment='top')
+    plt.tick_params(axis='both', which='minor', labelsize=25)
+    plt.tick_params(axis='both', which='major', labelsize=25)
+    plt.legend(fontsize=25,loc=2)
     plt.axis('normal')    
     plt.xlim(0, -30)  # decreasing temperature
     plt.ylim(0, 4)  # decreasing time 
@@ -552,11 +558,11 @@ def main():
     
     
     plt.figure(figsize=(16,10))
+    plt.plot(get_t_profile_in_certain_moment_of_time(z_index_max, model_datetime, model_period, model_length, the_time_moment), 10**(3)*(get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, 'QCLOUD')[x_index] + get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, 'QRAIN')[x_index]), linewidth=7, label = 'QCLOUD + QRAIN ' + str(the_time_moment), color = (0,0,0,1))
     for curve_number in range (0, len(curves_array_T)):
         plt.plot(curves_array_T[curve_number], curves_array_LWC[curve_number], linewidth=4, label = curves_names[curve_number], color =  curves_colors[curve_number], linestyle = curves_styles[curve_number])
-    plt.plot(get_t_profile_in_certain_moment_of_time(z_index_max, model_datetime, model_period, model_length, the_time_moment), 10**(3)*get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, 'QCLOUD')[x_index], linewidth=4, label = 'QCLOUD '+str(the_time_moment), color =  (0, 0, 0, 0.7), linestyle = '--')   
-    plt.plot(get_t_profile_in_certain_moment_of_time(z_index_max, model_datetime, model_period, model_length, the_time_moment), 10**(3)*(get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, 'QCLOUD')[x_index] + get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, 'QRAIN')[x_index]), linewidth=4, label = 'QCLOUD + QRAIN ' + str(the_time_moment), color = (0,0,0,1))
-    plt.title('Diagram for Reverse_Curve', fontsize=22)
+#    plt.plot(get_t_profile_in_certain_moment_of_time(z_index_max, model_datetime, model_period, model_length, the_time_moment), 10**(3)*get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, 'QCLOUD')[x_index], linewidth=4, label = 'QCLOUD '+str(the_time_moment), color =  (0, 0, 0, 0.7), linestyle = '--')   
+#    plt.title('Diagram for Reverse_Curve', fontsize=22)
     plt.xlabel('T, C', fontsize=20, horizontalalignment='right' )
     plt.ylabel('LWC,' + r'$\frac{gr}{m^3}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
     plt.legend(fontsize=20,loc=2)
