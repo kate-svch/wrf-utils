@@ -21,7 +21,7 @@ x_lon = 45                                                                  # In
 y_lat = 45                                                                  # Index to d02 Aragats point
 x_min = 44; x_max = 47; 
 #x_min = 39; x_max = 52;  # it's borders of the drawn area for xz-diagrams
-z_index_max = 20;   # it's the maximal index of height: 20 corresponds to approximately  10.2 km
+#z_index_max = 20;   # it's the maximal index of height: 20 corresponds to approximately  10.2 km
 
            
 #model_datetime = datetime.datetime(2018, 3, 4, 18, 0)            # Starting time for WRF modeling (hour, minute)
@@ -40,7 +40,7 @@ current_folder = '/mnt/data-internal/newversion'
 
 # this function is used in other files        
 # =============================================================================
-# def set_model_datetime(new_model_datetime, new_model_period):
+# def set_model_datetime(new_model_datetime, new_model_period):charge_starting_point = 19;   # minimal z_Inside_index: all the lower hydrometeors are suppposed to be uncharged (19 corresponds to 0.5 km)
 # #     global model_datetime
 # #     global model_period
 # #     global model_length
@@ -85,7 +85,7 @@ def get_height_for_y(model_datetime, y_here):
  #    height = (base_geopot + pert_geopot) / 9.81
      height = getvar(file, 'z', meta = False)
      temp_height = height[:, y_here, x_lon]
-     # "ground_height" is the minimal considered value of the altitude: it defines "zero-value" of "z"  (in metres)
+     # "ground_height" is the minimal considered value of the altitude: it defines "zero-value" of "z"  (in metres)the_time_moment_index
      ground_height = height[0, y_lat, x_lon]
      for current_index in range (0, len(temp_height)):
          temp_height[current_index] += -ground_height + 2
@@ -334,7 +334,7 @@ def get_mass_density_yz(z_index_max, model_datetime, model_period, model_length,
     vapor_yz = vapor[time_index , 0:z_index_max, x_min:x_max, x_lon]    
     #vapor_xz = vapor[time_index , 0:z_index_max, y_lat, :]    
         # we can see, that first coordinate is abscissa
-    # let's transpose this array to have z-coordinate as the ordinate   
+    # let's transpose this array to have z-coordinate as the ordinate   number_of_time_points
     vapor_yz = vapor_yz.transpose() 
     return vapor_yz
 
@@ -416,7 +416,7 @@ def get_q_ground(model_datetime, model_period, model_length, event_datetime, nam
 # =============================================================================
 # def create_time_array_in_hours(start_hour, event_datetime, number_of_time_points, step, time_point_of_start):
 # # step is the quantity of hours in one "time unit"
-# # if "time unit" = 5 min, then step = 1/12
+# # if "time unit" = 5 min, then step = 1/12z_index_max
 # 
 #     time_index = get_index(event_datetime, number_of_time_points )
 #     time_array_in_hours = [start_hour * step] * number_of_time_points
@@ -486,7 +486,7 @@ def main():
 # =============================================================================
 #     model_datetime = datetime.datetime(2016, 10, 29, 0)
 #     event_finish_datetime = datetime.datetime(2016, 10, 30, 12)
-#     the_time_moment = datetime.datetime(2016, 10, 29, 22, 10)
+#     the_time_moment = datetime.datetime(2016, 10, 29, 22, 10)array_loaded 
 #     the_second_time_moment  =  datetime.datetime(2016, 10, 29, 22, 10)
 # =============================================================================
      
@@ -494,7 +494,7 @@ def main():
     model_datetime = datetime.datetime(2016, 6, 11, 0, 0)
     event_finish_datetime = datetime.datetime(2016, 6, 12, 0, 0)
 
-    the_time_moment = datetime.datetime(2016, 6, 11, 11, 0) 
+    the_time_moment = datetime.datetime(2016, 6, 11, 11, 10) 
     the_second_time_moment = datetime.datetime(2016, 6, 11, 9, 50)     
     the_third_time_moment  = datetime.datetime(2016, 6, 11, 10, 5)     
     the_fourth_time_moment = datetime.datetime(2016, 6, 11, 11, 10) 
@@ -511,11 +511,11 @@ def main():
 #     event_finish_datetime = datetime.datetime(2017, 9, 30, 0, 0)
 # #    the_time_moment = datetime.datetime(2017, 9, 29, 18, 50) 
 #     the_time_moment = datetime.datetime(2017, 9, 29, 19, 35)   
-#     the_second_time_moment = datetime.datetime(2017, 9, 29, 20, 10)
+#     the_second_time_moment = datetime.datetime(2017, 9, 29, 20, 10)array_loaded 
 # =============================================================================
     
     
-    
+        
  # here we have an automatical "numnber_of_time_points"-initialization      
    #  "event_datetime" could have any value from modelled time, or just be equal to "model_datetime"
     event_datetime = model_datetime
@@ -526,7 +526,6 @@ def main():
     file = get_wrf_file(model_datetime)
     variable = file.variables['T2'].data[:]
     model_length = len(variable[:, y_lat, x_lon])      
-    
 # INTERPOLATION parameters are defined here   convert to a non-
     
     path = os.path.join(current_folder) + '/' 
@@ -540,11 +539,14 @@ def main():
     height_max = 8
     mnt_from_msl = height[0, y_lat, x_lon]/1000.  # высота станции над mean sea level
     
-    height_array_for_interp = np.arange(height_min + mnt_from_msl, height_max +mnt_from_msl, 0.02)   # in km
+    height_array_for_interp = np.arange(height_min + mnt_from_msl, height_max + mnt_from_msl, 0.02)   # in km
     start_level = 'ght_msl' # above_mean_sea_level ; 'ght_agl' - above ground level    
-
-   
-          
+    
+    
+    height_array_zero_on_the_ground = np.arange(height_min , height_max,  0.02) # in km
+      # we write "z_array" in file just once - in assumption, that it is  one and the same array for each "name" (type of hydrometeors)
+    np.save('/home/kate-svch/Thunder/Aragats_measurements/py-codes/z_and_dens_arrays/z_array_' + datetime.datetime.strftime(the_time_moment, '%Y-%m-%d_%H:00:00') +'.npy', np.array(height_array_zero_on_the_ground))
+    
     
 
     z_index_max = 26;   # it's the maximal index of height: 20 corresponds to approximately  10.2 km
@@ -552,13 +554,15 @@ def main():
 
 
     charge = 0.5*10**(-6);     
-    
-        
         
    # let's try to determine time and height values properly     
 
     z_vector = get_height(model_datetime, x_lon)[0:z_index_max]/1000
     time_vector = [event_datetime + datetime.timedelta(minutes=wrf_step_minutes * i) for i in range(number_of_time_points)]    
+    
+    np.save('/home/kate-svch/Thunder/Aragats_measurements/py-codes/z_and_dens_arrays/z_vector_' + datetime.datetime.strftime(the_time_moment, '%Y-%m-%d_%H:00:00') +'.npy', np.array(z_vector))
+    
+    
     
    # name_array = ["QCLOUD", "QGRAUP", "QICE",  "QRAIN", "QSNOW","QVAPOR"]
    # name_array = ["QCLOUD", "QGRAUP", "QICE",  "QRAIN", "QSNOW"]
@@ -588,7 +592,7 @@ def main():
 #     model_height = get_geopotential_height(event_datetime, time_point_of_start  = 1)    
 #     event_time = create_time_array_in_hours(start_hour, event_datetime, number_of_time_Interpolation points, step, time_point_of_start);
 # =============================================================================
-    
+    z_index_max
 
 
 # IT'S WIND CONSIDERATION
@@ -645,7 +649,7 @@ def main():
 #         plt.plot(the_third_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_third_time_moment))
 #         plt.plot(the_fourth_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_fourth_time_moment))
 #         plt.legend(fontsize=20,loc=1)
-#         plt.show() 
+#         plt.show() z_index_max
 #         
 #         array_from_get_wind = get_ns_wind_certain_level(model_datetime, model_period, model_length, event_datetime, z_index, number_of_time_points)
 #         plt.figure(figsize=(18,8))
@@ -657,7 +661,7 @@ def main():
 #         plt.plot(the_second_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_second_time_moment))
 #         plt.plot(the_third_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_third_time_moment))
 #         plt.plot(the_fourth_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_fourth_time_moment))
-#         plt.legend(fontsize=20,loc=1)
+#         plt.legend(fontsize=20,loc=1)height_array_for_interp 
 #         plt.show()    
 # =============================================================================
 
@@ -684,17 +688,17 @@ def main():
 #     plt.xlabel('time', fontsize=20, horizontalalignment='right' )
 #     plt.ylabel('T, C', rotation='horizontal', he_fifth_time_momentfontsize=20, horizontalalignment='right', verticalalignment='top')
 #     plt.plot(time_vector, get_t2(model_datetime, model_period, model_length, event_datetime, number_of_time_points=number_of_time_points))
-#     plt.xlim(event_datetime  , event_datetime + datetime.timedelta(minutes=wrf_step_minutes * (number_of_time_points - 1))  )
+#     plt.xlim(event_datetime  , event_datetime + datetime.timedelta(m+ '_' + name + inutes=wrf_step_minutes * (number_of_time_points - 1))  )
 #     plt.show()
 #       
-#     plt.figure(figsize=(18,8))
+#     plt.figure(figsize=(18,8))the_time_moment
 #     picture_t_getvar = plt.contourf(time_vector, z_vector, np.array(get_t_with_getvar(model_datetime, model_period, model_length, event_datetime, number_of_time_points)).transpose())
 #     plt.colorbar(picture_t_getvar) 
 #     plt.title('Temperature distribution', fontsize=22)
 #     plt.xlabel('time', fontsize=20, horizontalalignment='right' )
 #     plt.ylabel('z, km', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
 # #    plt.axis('image')
-#     plt.axis('normal')      
+#     plt.axis('normal')      array_loaded 
 #     plt.show()    
 #     
 #     
@@ -711,13 +715,13 @@ def main():
 #     plt.xlabel('time', fontsize=20, horizontalalignment='right' )
 #     plt.ylabel('kPa', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
 #     plt.plot(time_vector, get_s_pressure(model_datetime, model_period, model_length, event_datetime, number_of_time_points))
-#     plt.show()
+#     plt.show()array_loaded 
 # =============================================================================
     
     
        
     
-    
+    height_array_for_interp 
     plt.figure(figsize=(18,8))
     plt.title('Temperature profile'+ ', '+ str(the_time_moment) , fontsize=22)
     plt.xlabel('z, km', fontsize=20, horizontalalignment='right' )
@@ -725,7 +729,7 @@ def main():
     plt.plot(z_vector, get_t_profile_in_certain_moment_of_time(z_index_max, model_datetime, model_period, model_length, the_time_moment), linewidth=3, label = str(the_time_moment), color =  (1, 0.4, 0, 1))   
     plt.show()
     
-    
+    z_index_max
     
     
     plt.figure(figsize=(18,8))
@@ -768,7 +772,7 @@ def main():
     z_array = np.zeros([x_max - x_min, z_index_max])   # it's for x-dependencies, for fixed y-value!
     x_array = np.zeros([x_max - x_min, z_index_max])
     y_array = np.zeros([x_max - x_min, z_index_max])
-    z_for_y_array = np.zeros([x_max - x_min, z_index_max])  
+    z_for_y_array = np.zeros([x_max - x_min, z_index_max]) 
     
     for j_x in range(x_min, x_max):
 #        print (j_x)    
@@ -788,14 +792,7 @@ def main():
     
 
     
-    
-    
-    
-    
-    
-    
     for name in name_array:
-        
 # =============================================================================
 #         plt.figure(figsize=(18,8))
 #         plt.title(name + ' profile in certain moment of time' , fontsize=22)
@@ -822,7 +819,7 @@ def main():
         
     # Let's look on the upper picture - t-z particles distribution, 
     # and choose the time-point under interest (one of the values on the time-axis)
-    # then just use "number_of_the_time_point = that_chosen_value",
+    # then just use "number_of_the_time_point = that_chosen_value",z_index_max
     # and we'll get x-z particles distribuation - on the lower picture    
         
   #      picture2 =  plt.contourf(x_values, z_vector, np.array(   get_q_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, name )).transpose())    
@@ -830,8 +827,7 @@ def main():
 
    #  print (z_array)  
      
- 
-   
+     
         plt.figure(figsize=(18,8))        
         picture2 =  plt.contourf(x_array, z_array, np.array(   get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, name )))
         plt.colorbar(picture2, format =  "%0.6f") 
@@ -884,11 +880,15 @@ def main():
  #       print(density_3D_array[:, -1, 1])
         
 #        print(density_3D_array)
+ 
+        np.save('/home/kate-svch/Thunder/Aragats_measurements/py-codes/z_and_dens_arrays/dens_array_' + name + '_'+ datetime.datetime.strftime(the_time_moment, '%Y-%m-%d_%H:00:00') +'.npy', np.array(m_density_array[0:z_index_max+1, x_lon-x_min, y_lat-x_min]))
+ 
         
-        np.save('/home/kate-svch/Thunder/Aragats_measurements/py-codes/interpolated_densities/int_dens_' + datetime.datetime.strftime(model_datetime, '%Y-%m-%d_%H:00:00') + '_' + name + '.npy', np.array(density_3D_array ))
+        np.save('/home/kate-svch/Thunder/Aragats_measurements/py-codes/interpolated_densities/int_dens_' + datetime.datetime.strftime(the_time_moment, '%Y-%m-%d_%H:00:00') + '_' + name + '.npy', np.array(density_3D_array ))
  #       np.save('filename.npy', np.array(density_3D_array))
 
     
+        np.save('/home/kate-svch/Thunder/Aragats_measurements/py-codes/z_and_dens_arrays/dens_array_interpolated_' + name + '_'+ datetime.datetime.strftime(the_time_moment, '%Y-%m-%d_%H:00:00') +'.npy', np.array(density_3D_array[:, x_lon-x_min, y_lat-x_min]))
         
     
     
@@ -904,8 +904,8 @@ def main():
     
     
         time_length = len(time_vector)
-        time_start_index =  time_length*16//36;
-        time_finish_index =  time_length*29//36;
+        time_start_index =  time_length*11//36;
+        time_finish_index =  time_length*25//36;
     
     
     
@@ -955,9 +955,9 @@ def main():
  # let's draw the sum of fields, created by two kinds of cloud-particles
     name1 = "QSNOW"
     name2 = "QGRAUP"
-    charge1 = -0.2*10**(1);
-    charge2 = 4*10**(1);
-    plt.figure(figsize=(8,16))
+    charge1 = -8*10**(0);
+    charge2 = 10*10**(0);
+    plt.figure(figsize=(8,12))
     sum_of_fields = 10**(-3)*(np.array(el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, event_datetime, name1, charge1, number_of_time_points)) + np.array(el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, event_datetime, name2, charge2, number_of_time_points)))
     plt.plot(time_vector, sum_of_fields)
     plt.title('Electric field created by '+ name1 + ' and ' + name2, fontsize=22)
@@ -967,6 +967,11 @@ def main():
     plt.xlim(time_vector[time_start_index], time_vector[time_finish_index] )   
     plt.ylim(-8, 8 )     
     plt.show()
+    
+    the_time_moment_index = get_index(model_datetime, model_period, model_length, the_time_moment, 1 )
+    print('the_time_moment_index = '+str(the_time_moment_index))
+  
+    print('Ground-level el.field at '+ str(the_time_moment)+' = '+str(sum_of_fields[the_time_moment_index]))
     
     
     name1 = "QSNOW"
@@ -979,7 +984,7 @@ def main():
     plt.ylabel(r'$\frac{kV}{m}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
 #    plt.xlim(time_vector[0], time_vector[-1] )    
     plt.xlim(time_vector[time_start_index], time_vector[time_finish_index] )   
-    plt.ylim(-40, 40 )   
+#    plt.ylim(-40, 40 )   
     plt.legend(fontsize=20,loc=1)
     plt.show()   
 
@@ -1021,7 +1026,6 @@ def get_index(model_datetime, model_period, model_length, event_datetime, vector
 
 if __name__ == '__main__':
     main()
-
 
 # just type
 #  runfile('/home/kate-svch/Thunder/Aragats measurements/model2.py')
