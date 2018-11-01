@@ -6,6 +6,8 @@ Created on Fri Sep  7 10:43:32 2018
 @author: kate-svch
 """
 
+# СТРОИТ ОБЩУЮ ЧАСТЬ НЕСКОЛЬКИХ ЗАВИСИМОСТЕЙ В ОДНИХ ОСЯХ В ОБЩЕЙ ЧАСТИ СУЩЕСТВОВАНИЯ ВСЕХ ЗАВИСИМОСТЕЙ
+
 # reads csv-file about electric field, temperature, wind-speed, pressure; and gets graphs
 # we'll draw values from csv-measurements and from wrf-reanalysis
 #  all values for wrf-reanalysis are obtained with time step of  5 minutes
@@ -25,104 +27,69 @@ import matplotlib.colors as colors
 import matplotlib.cm as cmx
 
 
-csv_folder = '/home/kate-svch/oscillo_csv/' 
-max_number = 5;
-#csv_data = pd.read_csv(csv_folder + '3_Ch' + str(number) + '.csv')
+csv_folder = '/home/kate-svch/Wada_data/source_wada_et_al/figure1' 
 
+names_array = ['efm', 'godot', 'growth']
+max_number = len(names_array);
 
+#max_number = 1
 
 #color_array = ['y', 'b', 'violet', 'g']
-color_array = ['#F9F807', '#00faff', '#ff02fa', '#05e400']
+#color_array = ['#F9F807', '#00faff', '#ff02fa', '#05e400']
+color_array = ['r', 'g', 'b', 'violet']
 #multiplayer_array = [1, 1.8 , 3, -0.052]
-multiplayer_array = [1, 1, 1, 1]
+multiplayer_array = [80, 1, 1]
 
+#start_number = len(pd.read_csv(csv_folder + '/' + names_array[0] + '.csv')) * 1//4
+#finish_number = len(pd.read_csv(csv_folder + '/' + names_array[0] + '.csv')) * 3//4
 
-# =============================================================================
-# #for j_str in range (0, len(csv_data)):
-# for j_str in range (6, 12):
-#     x_array.append(csv_data.iloc[j_str, 3])
-#     y_first_value_array.append(csv_data.iloc[j_str, 4])
-#     print (csv_data.iloc[j_str, 3])
-#     print(csv_data.iloc[j_str, 4])
-# 
-# =============================================================================
+start_number_value_str = (pd.read_csv(csv_folder + '/' + names_array[0] + '.csv')).iloc[0,0]
+finish_number_value_str = (pd.read_csv(csv_folder + '/' + names_array[0] + '.csv')).iloc[-1,0]
 
-plt.figure(figsize=(14,8))
+start_number_value =  datetime.time(int(start_number_value_str[0:2]), int(start_number_value_str[3:5]), int(start_number_value_str[6:8]), int(start_number_value_str[9:10])*10**5)
+finish_number_value =  datetime.time(int(finish_number_value_str[0:2]), int(finish_number_value_str[3:5]), int(finish_number_value_str[6:8]), int(finish_number_value_str[9:10])*10**5)
 
-for number in range(1, max_number):    
-    txt_file = csv_folder + '3_Ch' + str(number) + '.txt'
-    file_we_opened = open(txt_file, 'r')
-    lines_array = file_we_opened.readlines()
-    file_we_opened.close() 
-    
-    number_of_extra_lines = 0
-    
-    index_min = (len(lines_array) - number_of_extra_lines) *48//100
-    index_max = (len(lines_array) - number_of_extra_lines) *57//100
-    
-    output_file = csv_folder + 'temp_'+ str(number) +'.csv'
-    
-    with open(output_file, "w") as output:
-        #for j_str in range(6, len(lines_array) ):
-        for j_str in range(number_of_extra_lines + index_min, number_of_extra_lines + index_max ):    
-            if (lines_array[j_str][3] == '-'):
-                x_str = lines_array[j_str][3:19]
-                y_str = lines_array[j_str][20:]
-            else:  
-                x_str = lines_array[j_str][3:18]
-                y_str = lines_array[j_str][19:]
-            x_str = x_str.replace(',', '.')
-            y_str = y_str.replace(',', '.')
-            output.write(x_str + ',' + y_str)
-        output.write(x_str + ',' + y_str)    
-       
-            
-    
-    csv_data = pd.read_csv(output_file)
-    x_array = csv_data.iloc[:, 0];
-    y_first_value_array = csv_data.iloc[:, 1];
-    
-    
-    float_x_array = [];
-    float_y_first_value_array = []
-    
-    for jj in range(0, len(x_array)):
-        float_x_array.append(float(x_array[jj]))
-        float_y_first_value_array.append(float(y_first_value_array[jj]))
-            
-    float_x_array = np.array(float_x_array)  
-    float_y_first_value_array  = np.array(float_y_first_value_array)
-    
-    
-    temp_x_array = float_x_array.reshape(1000, 45)    
-    temp_y_first_value_array  = float_y_first_value_array.reshape(1000, 45)  
-    
-    x_array = temp_x_array.mean(axis = 1)
-    y_first_value_array = temp_y_first_value_array.mean(axis = 1)
+fig, ax = plt.subplots(figsize = (16,6))
 
+for number in range(0, max_number):    
+#for number in range(1, 2):    
+    csv_file_name = csv_folder + '/' + names_array[number] + '.csv'
+    csv_data = pd.read_csv(csv_file_name)
+    this_is_x_array = [] 
+    
+    for jjj in range(0, len(csv_data)):
+        this_x_str = csv_data.iloc[jjj, 0]
+        this_is_x_array.append(datetime.time(int(this_x_str[0:2]), int(this_x_str[3:5]), int(this_x_str[6:8]), int(this_x_str[9:10])*10**5))
+        
+    if (names_array[number] == 'efm'):
+        ax.plot(this_is_x_array, multiplayer_array[number]*csv_data.iloc[:, 1], color = color_array[number], label = str(names_array[number]))
+    else:     
+        ax.plot(this_is_x_array, multiplayer_array[number]*csv_data.iloc[:, 2], color = color_array[number], label = str(names_array[number]))
+    start, end = ax.get_xlim()
+    ax.xaxis.set_ticks(np.arange(start, end, 0.1))
+    
+    current_x_min_str = csv_data.iloc[0, 0]
+    current_x_max_str = csv_data.iloc[-1, 0] 
+    current_x_min = datetime.time(int(current_x_min_str[0:2]), int(current_x_min_str[3:5]), int(current_x_min_str[6:8]), int(current_x_min_str[9:10])*10**5)
+    current_x_max = datetime.time(int(current_x_max_str[0:2]), int(current_x_max_str[3:5]), int(current_x_max_str[6:8]), int(current_x_max_str[9:10])*10**5)
+    
+    if (current_x_min > start_number_value):
+        start_number_value = current_x_min
+    if (current_x_max < finish_number_value):
+        finish_number_value = current_x_max 
 
-
-    plt.plot( csv_data.iloc[:, 0], multiplayer_array[number-1]*csv_data.iloc[:, 1], color = color_array[number-1], label = str(number))
-
-
-
-#print('I have allready done it!')
 
 
 # =============================================================================
 # plt.title(name_of_value+ ' csv', fontsize=22)
 # plt.xlabel('time', fontsize=20, horizontalalignment='right' )
 # plt.ylabel('T, C', rotation='horizontal', fontsize=24, horizontalalignment='right', verticalalignment='top')
-# #plt.locator_params(nbins=4)
-# plt.locator_params(axis='y', nbins=10)
-    
+# plt.locator_params(nbins=4)
+#plt.locator_params(axis='y', nbins=10)
+plt.xlim(start_number_value, finish_number_value)
 plt.locator_params(axis='x', nbins=4)
 plt.legend(fontsize=20,loc=1)
 # =============================================================================
 plt.show()
 
-
                           
-# =============================================================================
-# plt.plot(the_first_time_for_field_array, model2.get_aux_speed_array(csv_data.iloc[:, 1], aux_pressure_height_number), linewidth=3, label = str(the_first_field_time_moment), color =  (1, 0.4, 0, 1))
-# =============================================================================
