@@ -38,7 +38,7 @@ current_folder = '/mnt/data-internal/newversion'
 #current_folder = '/mnt/data-internal/RDA_DS083.3'
 
 
-# this function is used in other files        
+# this function is used in other files            temp_t2 = file.variables['T2'].data[:] - 273.15
 # =============================================================================
 # def set_model_datetime(new_model_datetime, new_model_period):charge_starting_point = 19;   # minimal z_Inside_index: all the lower hydrometeors are suppposed to be uncharged (19 corresponds to 0.5 km)
 # #     global model_datetime
@@ -82,7 +82,7 @@ def get_height_for_y(model_datetime, y_here):
      file = get_wrf_file(model_datetime)
  #    base_geopot = file.variables['PHB'].data[:]
  #    pert_geopot = file.variables['PH'].data[:]
- #    height = (base_geopot + pert_geopot) / 9.81
+ #    height = (base_geopot + pert_geopot) / 9.8ng around detector sire at1
      height = getvar(file, 'z', meta = False)
      temp_height = height[:, y_here, x_lon]
      # "ground_height" is the minimal considered value of the altitude: it defines "zero-value" of "z"  (in metres)the_time_moment_index
@@ -100,7 +100,7 @@ def get_height_for_y(model_datetime, y_here):
 #     file = get_wrf_file()
 #     temp_ph = file.variables['PH'].data[:]
 #     temp_phb = file.variables['PHB'].data[:]
-#     supposed_mountain_height = [3200] * 40
+#     supposed_mountain_height = [3200] * 40череда
 #     temp_height = ((temp_ph[time_index+ time_point_of_start, 0:(-1), y_lat, x_lon] + temp_phb[time_index+ time_point_of_start, 0:(-1), y_lat, x_lon])/9.81) - supposed_mountain_height
 #     return temp_height/1000x_min = 39; x_max = 52;  # it's borders of the drawn area for xz-diagrams
 # =============================================================================
@@ -263,7 +263,6 @@ def get_q(z_index_max, model_datetime, model_period, model_length, event_datetim
 # we can see, that first coordinate is abscissa
     
 
-
 def get_mass_density(z_index_max, model_datetime, model_period, model_length, event_datetime, name, number_of_time_points=1):
    # get quantity of "name" microphysical fracture from 2m to 20 kilometers height : DIFFERENT HEIGHT AND TIME
    
@@ -272,8 +271,6 @@ def get_mass_density(z_index_max, model_datetime, model_period, model_length, ev
     vapor = file.variables[name].data[:] / (file.variables['ALT'].data[:])  
 #    return vapor[time_index : time_index  + number_of_time_points, :, y_lat, x_lon]
     return vapor[time_index : time_index  + number_of_time_points, 0:z_index_max, y_lat, x_lon]
-
-    
 
 
 def get_q_profile_in_certain_moment_of_time(model_datetime, model_period, model_length, the_time_moment, name):
@@ -456,7 +453,6 @@ def main():
 #     the_time_moment = datetime.datetime(2016, 5, 4, 11, 0) 
 #     the_second_time_moment = datetime.datetime(2016, 5, 4, 15, 00)     
 # =============================================================================
-
 #    the_time_moment = datetime.datetime(2016, 5, 4, 19, 10) 
 #    the_second_time_moment = datetime.datetime(2016, 5, 4, 18, 45) 
     
@@ -480,13 +476,11 @@ def main():
 #     the_second_time_moment = datetime.datetime(2016, 4, 28, 2, 0) 
 # =============================================================================
     
-    
-    
-    
+       
 # =============================================================================
 #     model_datetime = datetime.datetime(2016, 10, 29, 0)
 #     event_finish_datetime = datetime.datetime(2016, 10, 30, 12)
-#     the_time_moment = datetime.datetime(2016, 10, 29, 22, 10)array_loaded 
+#     the_time_moment = datetime.datetime(2016, 10, 29, 22, 10)
 #     the_second_time_moment  =  datetime.datetime(2016, 10, 29, 22, 10)
 # =============================================================================
      
@@ -592,7 +586,6 @@ def main():
 #     model_height = get_geopotential_height(event_datetime, time_point_of_start  = 1)    
 #     event_time = create_time_array_in_hours(start_hour, event_datetime, number_of_time_Interpolation points, step, time_point_of_start);
 # =============================================================================
-    z_index_max
 
 
 # IT'S WIND CONSIDERATION
@@ -662,7 +655,7 @@ def main():
 #         plt.plot(the_third_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_third_time_moment))
 #         plt.plot(the_fourth_time_of_event_for_wind_array, get_aux_speed_array(array_from_get_wind, aux_speed_height_number), label = str(the_fourth_time_moment))
 #         plt.legend(fontsize=20,loc=1)height_array_for_interp 
-#         plt.show()    
+#         plt.show()        z_index_max = 26;  
 # =============================================================================
 
 
@@ -680,7 +673,6 @@ def main():
 #     plt.show()  temp_height
 # 
 # =============================================================================
-
     
 # =============================================================================
 #     plt.figure(figsize=(18,8))    
@@ -719,17 +711,14 @@ def main():
 # =============================================================================
     
     
-       
-    
-    height_array_for_interp 
+  
     plt.figure(figsize=(18,8))
     plt.title('Temperature profile'+ ', '+ str(the_time_moment) , fontsize=22)
     plt.xlabel('z, km', fontsize=20, horizontalalignment='right' )
     plt.ylabel('T, C', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
     plt.plot(z_vector, get_t_profile_in_certain_moment_of_time(z_index_max, model_datetime, model_period, model_length, the_time_moment), linewidth=3, label = str(the_time_moment), color =  (1, 0.4, 0, 1))   
     plt.show()
-    
-    z_index_max
+
     
     
     plt.figure(figsize=(18,8))
@@ -790,7 +779,8 @@ def main():
 # =============================================================================
     
     
-
+    time_number_start = number_of_time_points* 3//8
+    time_number_finish = number_of_time_points* 5//8
     
     for name in name_array:
 # =============================================================================
@@ -804,7 +794,7 @@ def main():
     
         
         plt.figure(figsize=(18,8))
-        picture_mass = plt.contourf(time_vector, z_vector, np.array(get_mass_density(z_index_max, model_datetime, model_period, model_length, event_datetime, name, number_of_time_points)).transpose())   
+        picture_mass = plt.contourf(time_vector[time_number_start:time_number_finish], z_vector, np.array(get_mass_density(z_index_max, model_datetime, model_period, model_length, event_datetime, name, number_of_time_points)).transpose()[:, time_number_start:time_number_finish])
         plt.colorbar(picture_mass, format =  "%0.6f" )
         plt.title('Density: '+ name, fontsize=22)
         plt.xlabel('time', fontsize=20, horizontalalignment='right' )
@@ -812,8 +802,6 @@ def main():
     #    plt.axis('image')
         plt.axis('normal')       
         plt.show()
-        
-        plt.figure(figsize=(22, 7))
         
                      
         
