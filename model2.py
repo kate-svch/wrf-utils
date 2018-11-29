@@ -30,12 +30,11 @@ x_min = 44; x_max = 47;
 #model_period = None #datetime.timedelta(minutes=5)
 #model_length = None
 
-#current_folder = '/mnt/data-internal/reanalysis'    # this is the folder for the 2018-03-05 event
-
-current_folder = '/mnt/data-internal/newversion'
+current_folder = '/mnt/data-internal/reanalysis'    # this is the folder for the 2018-03-05 event in particular
 #current_folder = '/mnt/data-internal/Mansell'
-
 #current_folder = '/mnt/data-internal/RDA_DS083.3'
+
+#current_folder = '/mnt/data-internal/newversion'
 
 
 # this function is used in other files            temp_t2 = file.variables['T2'].data[:] - 273.15
@@ -468,13 +467,11 @@ def main():
 # =============================================================================
     
     
-# =============================================================================
-#     model_datetime = datetime.datetime(2016, 4, 26, 12, 0)
-#     event_finish_datetime = datetime.datetime(2016, 4, 29, 0, 0)
-# 
-#     the_time_moment = datetime.datetime(2016, 4, 28, 2, 0) 
-#     the_second_time_moment = datetime.datetime(2016, 4, 28, 2, 0) 
-# =============================================================================
+    model_datetime = datetime.datetime(2016, 4, 26, 12, 0)
+    event_finish_datetime = datetime.datetime(2016, 4, 29, 0, 0)
+
+    the_time_moment = datetime.datetime(2016, 4, 28, 2, 0) 
+    the_second_time_moment = datetime.datetime(2016, 4, 28, 2, 0) 
     
        
 # =============================================================================
@@ -485,14 +482,16 @@ def main():
 # =============================================================================
      
     
-    model_datetime = datetime.datetime(2016, 6, 11, 0, 0)
-    event_finish_datetime = datetime.datetime(2016, 6, 12, 0, 0)
-
-    the_time_moment = datetime.datetime(2016, 6, 11, 11, 10) 
-    the_second_time_moment = datetime.datetime(2016, 6, 11, 9, 50)     
-    the_third_time_moment  = datetime.datetime(2016, 6, 11, 10, 5)     
-    the_fourth_time_moment = datetime.datetime(2016, 6, 11, 11, 10) 
-    the_fifth_time_moment = datetime.datetime(2016, 5, 12, 14, 45) 
+# =============================================================================
+#     model_datetime = datetime.datetime(2016, 6, 11, 0, 0)
+#     event_finish_datetime = datetime.datetime(2016, 6, 12, 0, 0)
+# 
+#     the_time_moment = datetime.datetime(2016, 6, 11, 11, 10) 
+#     the_second_time_moment = datetime.datetime(2016, 6, 11, 9, 50)     
+#     the_third_time_moment  = datetime.datetime(2016, 6, 11, 10, 5)     
+#     the_fourth_time_moment = datetime.datetime(2016, 6, 11, 11, 10) 
+#     the_fifth_time_moment = datetime.datetime(2016, 5, 12, 14, 45) 
+# =============================================================================
 
 
     the_second_time_moment  = the_time_moment
@@ -574,6 +573,74 @@ def main():
     the_fourth_time_of_event_for_wind_array = [the_fourth_time_moment]*(aux_speed_height_number + 1);  
     the_fifth_time_of_event_for_wind_array = [the_fifth_time_moment]*(aux_speed_height_number + 1);  
     
+    
+    ground_height = height[0, y_lat, x_lon]   
+    
+    
+    
+    
+    x_delta = 3   # выбор номера столба по x, считая в любую сторону от центра (от станции) (может быть любого знака)
+    x_index = x_lon - x_min + x_delta    # выбор номера столба по x, считая от левого края
+    
+    
+    
+    
+     # THIS IS DEW_POINT CURVES - IN THE AXIS "Temperature - Liquid_Water_Content"   
+    curves_names = ['Saunders et al 2006', 'Pereyra et al. 2000', 'Takahashi 1978', 'Saunders and Peck 1998']
+    curves_colors = [(0.5, 0, 0.9, 1), (0., 0, 1, 1), (0., 0.6, 0., 1), (0.9, 0.3, 0, 1)]
+    curves_styles = ['-','-.',':','--']
+    
+    curves_array_T = []; curves_array_LWC = []
+    
+    curves_array_T.append ( [-18, -16, -14.6, -13.5, -13, -12.7, -13,  -14, -16, -18 ]) 
+    curves_array_LWC.append( [0.1, 0.39, 0.6, 0.92, 1.25, 1.6, 2.0, 2.55, 3.05, 3.6] )
+    
+    curves_array_T.append ([-18, -14.5, -13.7, -13.4, -13.5, -14.5, -18, -21, -24.5 ])
+    curves_array_LWC.append ( [0.1, 0.45, 0.6, 0.8, 0.92, 1.25, 1.95, 2.5, 3.0 ] )
+    
+    curves_array_T.append ([-30, -25, -21, -18, -13.5, -11.3, -9.5, -8.85, -8.9, -10.7, -13.7, -17.9, -21, -25, -30 ])
+    curves_array_LWC.append ( [0.08, 0.09, 0.12, 0.16, 0.26, 0.4, 0.58, 0.75, 0.95, 1.25, 1.6, 1.85, 2.04, 2.15, 2.2] )
+      
+    curves_array_T.append ([-30, -26.6, -25, -24.5, -22.0, -21.0, -19.1, -18, -16, -14.6, -13.5, -12.5, -10.0, -5.0, -2.5 ])
+    curves_array_LWC.append ( [0.6, 1.0, 1.15, 1.17, 1.1, 1.0, 0.85, 0.77, 0.64, 0.59,  0.54, 0.48, 0.4, 0.38, 0.37] )
+    
+    plt.figure(figsize=(16,10))
+    for curve_number in range (0, len(curves_array_T)):
+        plt.plot(curves_array_T[curve_number], curves_array_LWC[curve_number], linewidth=4, label = curves_names[curve_number], color =  curves_colors[curve_number], linestyle = curves_styles[curve_number])
+#    plt.title('Diagram for Reverse_Curve', fontsize=22)
+    plt.xlabel('T, C', fontsize=25, horizontalalignment='right' )
+    plt.ylabel('LWC,' + r'$\frac{gr}{m^3}$', rotation='horizontal', fontsize=25, horizontalalignment='right', verticalalignment='top')
+    plt.tick_params(axis='both', which='minor', labelsize=25)
+    plt.tick_params(axis='both', which='major', labelsize=25)
+    plt.legend(fontsize=25,loc=2)
+    plt.axis('normal')    
+    plt.xlim(0, -30)  # decreasing temperature
+    plt.ylim(0, 4)  # decreasing time 
+    plt.show()  
+    
+    
+    
+    plt.figure(figsize=(16,10))
+    plt.plot(get_t_profile_in_certain_moment_of_time(z_index_max, model_datetime, model_period, model_length, the_time_moment), 10**(3)*(get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, 'QCLOUD')[x_index] + get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, 'QRAIN')[x_index]), linewidth=7, label = 'QCLOUD + QRAIN ' + str(the_time_moment), color = (0,0,0,1))
+    for curve_number in range (0, len(curves_array_T)):
+        plt.plot(curves_array_T[curve_number], curves_array_LWC[curve_number], linewidth=4, label = curves_names[curve_number], color =  curves_colors[curve_number], linestyle = curves_styles[curve_number])
+#    plt.plot(get_t_profile_in_certain_moment_of_time(z_index_max, model_datetime, model_period, model_length, the_time_moment), 10**(3)*get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, 'QCLOUD')[x_index], linewidth=4, label = 'QCLOUD '+str(the_time_moment), color =  (0, 0, 0, 0.7), linestyle = '--')   
+#    plt.title('Diagram for Reverse_Curve', fontsize=22)
+    plt.xlabel('T, C', fontsize=20, horizontalalignment='right' )
+    plt.ylabel('LWC,' + r'$\frac{gr}{m^3}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+    plt.legend(fontsize=20,loc=2)
+    plt.axis('normal')    
+    plt.xlim(0, -30)  # decreasing temperature
+    plt.ylim(0, 4)  # decreasing time 
+    plt.show()     
+    
+    
+    
+    
+    
+    
+    
+    
 
     # the following three lines are the automatical determination of "number_of_time_points"   - the time-length of the data 
 #    file = get_wrf_file()
@@ -583,7 +650,13 @@ def main():
     
 # let's determine z-values: for all the times (we hope, it doesn't really change)
 # =============================================================================
-#     model_height = get_geopotential_height(event_datetime, time_point_of_start  = 1)    
+#     model_height = get_geopotential_height(event_datetime, time_point_of_start  = 1)        
+    
+    
+    
+    
+    
+    
 #     event_time = create_time_array_in_hours(start_hour, event_datetime, number_of_time_Interpolation points, step, time_point_of_start);
 # =============================================================================
 
@@ -626,8 +699,6 @@ def main():
 #         plt.legend(fontsize=20,loc=1)
 #         plt.show()   
 # =============================================================================
-
-    ground_height = height[0, y_lat, x_lon]
 
 # =============================================================================         
 #         
