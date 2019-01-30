@@ -19,8 +19,8 @@ x_lon = 45                                                                  # In
 y_lat = 45                                                                  # Index to d02 Aragats point
            
 
-x_min = 35; x_max = 56;  # it's borders of the drawn area for xz-diagrams
-z_index_max = 30;   # it's the maximal index of height: 20 corresponds to approximately  10.2 km
+#x_min = 35; x_max = 56;  # it's borders of the drawn area for xz-diagrams
+z_index_max = 20;   # it's the maximal index of height: 20 corresponds to approximately  10.2 km
 
 
 
@@ -33,10 +33,9 @@ z_index_max = 30;   # it's the maximal index of height: 20 corresponds to approx
 #current_folder = '/mnt/data-internal/reanalysis'    # this is the folder for the 2018-03-05 event
 #current_folder = '/mnt/data-internal/newversion'
 #current_folder = '/mnt/data-internal/Mansell'
-#current_folder = '/mnt/data-internal/RDA_DS083.3'
+current_folder = '/mnt/data-internal/RDA_DS083.3/2019'
 
-#current_folder = '/mnt/data-internal/1minute'
-current_folder = '/mnt/data-internal/nizhniy'
+#current_folder = '/mnt/data-internal/nizhniy'
 
 # this function is used in other files        
 # =============================================================================
@@ -240,14 +239,14 @@ def get_q(z_index_max, model_datetime, model_period, model_length, event_datetim
 # we can see, that first coordinate is abscissa
 
 
-def get_mass_density(z_index_max, model_datetime, model_period, model_length, event_datetime, name, number_of_time_points=1):
+def get_mass_density(z_index_max, model_datetime, model_period, model_length, event_datetime, name, y_index, x_index, number_of_time_points=1):
    # get quantity of "name" microphysical fracture from 2m to 20 kilometers height : DIFFERENT HEIGHT AND TIME
    
     time_index = get_index(model_datetime, model_period, model_length, event_datetime,  number_of_time_points )
     file = get_wrf_file(model_datetime)
     vapor = wrf.getvar(file, name, None) / (wrf.getvar(file, 'ALT', None))  
 #    return vapor[time_index : time_index  + number_of_time_points, :, y_lat, x_lon]
-    return vapor[time_index : time_index  + number_of_time_points, 0:z_index_max, y_lat, x_lon]
+    return vapor[time_index : time_index  + number_of_time_points, 0:z_index_max, y_index, x_index]
 
 
 
@@ -262,7 +261,7 @@ def get_q_profile_in_certain_moment_of_time(model_datetime, model_period, model_
 
 
 
-def get_q_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, name):
+def get_q_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, name, y_index, x_index, x_half_number_of_points):
       
 # get quantity of "name" microphysical fracture from 2m to 20 kilometers height: DIFFERENT HEIGHT ANG X-VALUE
    
@@ -272,14 +271,16 @@ def get_q_xz(z_index_max, model_datetime, model_period, model_length, the_time_m
 #    vapor_xz = vapor[time_index , :, y_lat, :]
  
    # let's discover only the certain region along x-axis! 
-    vapor_xz = vapor[time_index , 0:z_index_max, y_lat, 35:56]
+    x_min = x_index - x_half_number_of_points ; 
+    x_max = x_index + x_half_number_of_points + 1
+    vapor_xz = vapor[time_index , 0:z_index_max, y_index, x_min:x_max]
         # we can see, that first coordinate is abscissa
     # let's transpose this array to have z-coordinate as the ordinate   
     vapor_xz = vapor_xz.transpose() 
     return vapor_xz
     
 # EAST OR WEST - HOME IS BEST
-def get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, name, y_index):
+def get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, name, y_index, x_index, x_half_number_of_points):
       
 # get quantity of "name" microphysical fracture from 2m to 20 kilometers height: DIFFERENT HEIGHT ANG X-VALUE
    
@@ -288,6 +289,9 @@ def get_mass_density_xz(z_index_max, model_datetime, model_period, model_length,
     vapor = wrf.getvar(file, name, None) / (wrf.getvar(file, 'ALT', None))  
 #    vapor_xz = vapor[time_index , :, y_lat, :] 
    # let's discover only the certain region along x-axis! 
+    x_min = x_index - x_half_number_of_points ; 
+    x_max = x_index + x_half_number_of_points + 1;
+    
     vapor_xz = vapor[time_index , 0:z_index_max, y_index, x_min:x_max]    
     #vapor_xz = vapor[time_index , 0:z_index_max, y_lat, :]    
         # we can see, that first coordinate is abscissa
@@ -481,22 +485,40 @@ def main():
 # =============================================================================
 #     model_datetime = datetime.datetime(2018, 5, 29, 18, 0)
 #     event_finish_datetime = datetime.datetime(2018, 5, 30, 6, 0)
-#     the_time_moment = datetime.datetime(2018, 5, 29, 19, 55) 
+#     the_time_moment = datetime.datetime(2018, 5, 30, 1, 30) 
 #     the_start_of_consideration = datetime.datetime(2018, 5, 29, 18, 0) 
 #     the_end_of_consideration = datetime.datetime(2018, 5, 30, 6, 0) 
 # =============================================================================
 
+    model_datetime = datetime.datetime(2019, 1, 16, 18, 0)
+    event_finish_datetime = datetime.datetime(2019, 1, 17, 18, 0, 0)
+    the_time_moment = datetime.datetime(2019, 1, 17, 2, 55)
+    the_start_of_consideration = datetime.datetime(2019, 1, 16, 18, 0)
+    the_end_of_consideration = datetime.datetime(2019, 1, 17, 18, 0, 0)
+
 ############  nizhniy novgorod
 
-    model_datetime = datetime.datetime(2016, 7, 4, 12, 0)
-    event_finish_datetime = datetime.datetime(2016, 7, 5, 0, 0)
-    the_time_moment = datetime.datetime(2016, 7, 4, 23, 0) 
-    the_start_of_consideration = datetime.datetime(2016, 7, 4, 21, 0)
-    the_end_of_consideration = datetime.datetime(2016, 7, 4, 23, 30)
+   
+    y_index = y_lat;         x_index = x_lon        # UNN
+#    y_index = y_lat  - 4;    x_index = x_lon        # Myza
+#    y_index = y_lat - 1;     x_index = x_lon + 6    # IPM RAS
+#    y_index = y_lat + 4;     x_index = x_lon + 3    # IPAP RAS  (it is really about 3.5 km for y and 2.6 km for x)
     
-    y_index = y_lat - 4;
 
+    x_half_number_of_points = 6
+    x_min = x_index - x_half_number_of_points ; 
+    x_max = x_index + x_half_number_of_points + 1;
+    
+    
 # =============================================================================
+#     model_datetime = datetime.datetime(2016, 7, 4, 12, 0)
+#     event_finish_datetime = datetime.datetime(2016, 7, 5, 0, 0)
+#     the_time_moment = datetime.datetime(2016, 7, 4, 23, 0) 
+#     the_start_of_consideration = datetime.datetime(2016, 7, 4, 16, 0)
+#     the_end_of_consideration = datetime.datetime(2016, 7, 4, 23, 30)
+# =============================================================================
+# =============================================================================
+# 
 #     model_datetime = datetime.datetime(2016, 7, 14, 6, 0)
 #     event_finish_datetime = datetime.datetime(2016, 7, 14, 12, 0)
 #     the_time_moment = datetime.datetime(2016, 7, 14, 10, 0) 
@@ -507,11 +529,18 @@ def main():
 # =============================================================================
 #     model_datetime = datetime.datetime(2016, 7, 16, 12, 0)
 #     event_finish_datetime = datetime.datetime(2016, 7, 17, 0, 0)
-#     the_time_moment = datetime.datetime(2016, 7, 16, 23, 0) 
-#     the_start_of_consideration = datetime.datetime(2016, 7, 16, 12, 0)
+#     the_time_moment = datetime.datetime(2016, 7, 16, 18, 10) 
+#     the_start_of_consideration = datetime.datetime(2016, 7, 16, 17, 0)
 #     the_end_of_consideration = datetime.datetime(2016, 7, 17, 0, 0) 
 # =============================================================================
     
+# =============================================================================
+#     model_datetime = datetime.datetime(2017, 5, 11, 0, 0)
+#     event_finish_datetime = datetime.datetime(2017, 5, 12, 0, 0)
+#     the_time_moment = datetime.datetime(2017, 5, 11, 16, 30)
+#     the_start_of_consideration = datetime.datetime(2017, 5, 11, 0, 0)
+#     the_end_of_consideration = datetime.datetime(2017, 5, 12, 0, 0)
+# =============================================================================
     
 
     the_second_time_moment  = the_time_moment
@@ -541,13 +570,10 @@ def main():
     
 #    time_number_start = 0
 #    time_number_end = number_of_time_points - 1
-    
-   
+     
     file = get_wrf_file(model_datetime)
     variable = wrf.getvar(file, 'T2', None)
     model_length = len(variable[:, y_lat, x_lon])  
-    
-    charge = 0.5*10**(-6);     
     
 # =============================================================================
 #     z_array = np.zeros([90,z_index_max])  
@@ -590,14 +616,14 @@ def main():
 #     print('z_index_max = ', z_index_max)
 # =============================================================================
 
-    x_delta = 3   # выбор номера столба по x, считая в любую сторону от центра (от станции) (может быть любого знака)
-    x_index = x_lon - x_min + x_delta    # выбор номера столба по x, считая от левого края
  # THIS IS DEW_POINT CURVES - IN THE AXIS "Temperature - Liquid_Water_Content"   
 # =============================================================================
+#     x_delta = -1   # выбор номера столба по x, считая в любую сторону от центра (от станции) (может быть любого знака)
+#     x_lwc = x_index - x_min + x_delta    # выбор номера столба по x, считая от левого края
 #     curves_names = ['Saunders et al 2006', 'Pereyra et al. 2000', 'Takahashi 1978', 'Saunders and Peck 1998']
 #     curves_colors = [(0.5, 0, 0.9, 1), (0., 0, 1, 1), (0., 0.6, 0., 1), (0.9, 0.3, 0, 1)]
 #     curves_styles = ['-','-.',':','--']
-#     
+# 
 #     curves_array_T = []; curves_array_LWC = []
 #     
 #     curves_array_T.append ( [-18, -16, -14.6, -13.5, -13, -12.7, -13,  -14, -16, -18 ]) 
@@ -627,9 +653,8 @@ def main():
 #     plt.show()  
 #     
 #     
-#     
 #     plt.figure(figsize=(16,10))
-#     plt.plot(get_t_profile_in_certain_moment_of_time(z_index_max, model_datetime, model_period, model_length, the_time_moment), 10**(3)*(get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, 'QCLOUD')[x_index] + get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, 'QRAIN')[x_index]), linewidth=7, label = 'QCLOUD + QRAIN ' + str(the_time_moment), color = (0,0,0,1))
+#     plt.plot(get_t_profile_in_certain_moment_of_time(z_index_max, model_datetime, model_period, model_length, the_time_moment), 10**(3)*(get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, 'QCLOUD', y_index, x_index, x_half_number_of_points)[x_lwc] + get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, 'QRAIN', y_index, x_index, x_half_number_of_points)[x_lwc]), linewidth=7, label = 'QCLOUD + QRAIN ' + str(the_time_moment), color = (0,0,0,1))
 #     for curve_number in range (0, len(curves_array_T)):
 #         plt.plot(curves_array_T[curve_number], curves_array_LWC[curve_number], linewidth=4, label = curves_names[curve_number], color =  curves_colors[curve_number], linestyle = curves_styles[curve_number])
 # #    plt.plot(get_t_profile_in_certain_moment_of_time(z_index_max, model_datetime, model_period, model_length, the_time_moment), 10**(3)*get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, 'QCLOUD')[x_index], linewidth=4, label = 'QCLOUD '+str(the_time_moment), color =  (0, 0, 0, 0.7), linestyle = '--')   
@@ -644,10 +669,7 @@ def main():
 # =============================================================================
     
     
-    
-    
-    
-    
+
     
     
 #    plt.figure(figsize=(18,8))
@@ -683,24 +705,26 @@ def main():
 
     
  # IT IS TEMPERATURE PROFILES   
+
+    plt.figure(figsize=(18,8))
+    plt.title('Temperature profile'+ ', '+ str(the_time_moment) , fontsize=22)
+    plt.xlabel('z, km', fontsize=20, horizontalalignment='right' )
+    plt.ylabel('T, C', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+    plt.plot(z_vector, get_t_profile_in_certain_moment_of_time(z_index_max, model_datetime, model_period, model_length, the_time_moment), linewidth=3, label = str(the_time_moment), color =  (1, 0.4, 0, 1))       
+
 # =============================================================================
-#     plt.figure(figsize=(18,8))
-#     plt.title('Temperature profile'+ ', '+ str(the_time_moment) , fontsize=22)
-#     plt.xlabel('z, km', fontsize=20, horizontalalignment='right' )
-#     plt.ylabel('T, C', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-#     plt.plot(z_vector, get_t_profile_in_certain_moment_of_time(z_index_max, model_datetime, model_period, model_length, the_time_moment), linewidth=3, label = str(the_time_moment), color =  (1, 0.4, 0, 1))   
-    
-#     plt.figure(figsize=(18,8))
-#     plt.title('Temperature profile'+ ', '+ str(the_time_moment) , fontsize=22)
-#     plt.xlabel('z, km', fontsize=20, horizontalalignment='right' )
-#     plt.ylabel('T, C', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
-# #    plt.plot(z_vector, get_t_profile_in_certain_moment_of_time(z_index_max, model_datetime, model_period, model_length, the_time_moment), linewidth=3, label = str(the_time_moment), color =  (1, 0.4, 0, 1))
-#     plt.plot(z_vector, get_t_profile_in_certain_moment_of_time(z_index_max, model_datetime, model_period, model_length, the_second_time_moment), linewidth=3, label = str(the_second_time_moment), color =  (0.9, 0, 0.4, 1))
-#     plt.plot(z_vector, get_t_profile_in_certain_moment_of_time(z_index_max, model_datetime, model_period, model_length, the_third_time_moment), linewidth=3, label = str(the_third_time_moment), color =  (0.5, 0.9, 0, 1))
-#     plt.plot(z_vector, get_t_profile_in_certain_moment_of_time(z_index_max, model_datetime, model_period, model_length, the_fourth_time_moment), linewidth=3, label = str(the_fourth_time_moment))    
-#     plt.legend(fontsize=20,loc=1)
-#     plt.show()
+#      plt.figure(figsize=(18,8))
+#      plt.title('Temperature profile'+ ', '+ str(the_time_moment) , fontsize=22)
+#      plt.xlabel('z, km', fontsize=20, horizontalalignment='right' )
+#      plt.ylabel('T, C', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')
+#  #    plt.plot(z_vector, get_t_profile_in_certain_moment_of_time(z_index_max, model_datetime, model_period, model_length, the_time_moment), linewidth=3, label = str(the_time_moment), color =  (1, 0.4, 0, 1))
+#      plt.plot(z_vector, get_t_profile_in_certain_moment_of_time(z_index_max, model_datetime, model_period, model_length, the_second_time_moment), linewidth=3, label = str(the_second_time_moment), color =  (0.9, 0, 0.4, 1))
+#      plt.plot(z_vector, get_t_profile_in_certain_moment_of_time(z_index_max, model_datetime, model_period, model_length, the_third_time_moment), linewidth=3, label = str(the_third_time_moment), color =  (0.5, 0.9, 0, 1))
+#      plt.plot(z_vector, get_t_profile_in_certain_moment_of_time(z_index_max, model_datetime, model_period, model_length, the_fourth_time_moment), linewidth=3, label = str(the_fourth_time_moment))    
+#      plt.legend(fontsize=20,loc=1)
+#      plt.show()
 # =============================================================================
+
     
 
 
@@ -714,7 +738,7 @@ def main():
     
 #    number_of_time_points = 25; 
 
-    charge = 0.5*10**(-3);     
+    charge = -1.1*10**(-2);     
     
 # =============================================================================
 #     z_array = np.zeros([90,z_index_max])  
@@ -749,11 +773,10 @@ def main():
 #         plt.plot(z_vector, get_q_profile_in_certain_moment_of_time(model_datetime, model_period, model_length, the_time_moment, name))
 #         plt.show()
 # =============================================================================
-    
-        
+            
         plt.figure(figsize=(18,8))
 #        picture_mass = plt.contourf(time_vector, z_vector, np.array(get_mass_density(z_index_max, model_datetime, model_period, model_length, event_datetime, name, number_of_time_points)).transpose())   
-        picture_mass = plt.contourf(time_vector[time_number_start:time_number_end], z_vector, np.array(get_mass_density(z_index_max, model_datetime, model_period, model_length, event_datetime, name, number_of_time_points)).transpose()[:, time_number_start:time_number_end])
+        picture_mass = plt.contourf(time_vector[time_number_start:time_number_end], z_vector, np.array(get_mass_density(z_index_max, model_datetime, model_period, model_length, event_datetime, name,  y_index, x_index, number_of_time_points)).transpose()[:, time_number_start:time_number_end])
         plt.colorbar(picture_mass, format =  "%0.6f" ) 
         plt.title('Density: '+ name, fontsize=22)
         plt.xlabel('time', fontsize=20, horizontalalignment='right' )
@@ -771,10 +794,11 @@ def main():
         
   #      picture2 =  plt.contourf(x_values, z_vector, np.array(   get_q_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, name )).transpose())    
    
-
 # EAST OR WEST     
         plt.figure(figsize=(22, 7))
-        picture2 =  plt.contourf(x_array, z_array, np.array(    get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, name, y_index )))
+        plt.rc('xtick', labelsize=22) 
+        plt.rc('ytick', labelsize=22)
+        picture2 =  plt.contourf(x_array, z_array, np.array(    get_mass_density_xz(z_index_max, model_datetime, model_period, model_length, the_time_moment, name, y_index,  x_index, x_half_number_of_points )))
         plt.colorbar(picture2, format =  "%0.6f") 
         plt.title('Density: '+ name + '  '+ str(the_time_moment), fontsize=22)
         plt.xlabel('x, km', fontsize=20, horizontalalignment='right' )
@@ -796,10 +820,13 @@ def main():
     
     
         plt.figure(figsize=(14,8))
+        plt.rc('xtick', labelsize=12) 
+        plt.rc('ytick', labelsize=22)
         plt.plot(time_vector[time_number_start:time_number_end], np.array(el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, event_datetime, name, charge, number_of_time_points))[time_number_start:time_number_end])
         plt.title('Electric field created by '+ name, fontsize=22)
         plt.xlabel('time', fontsize=20, horizontalalignment='right' )
-        plt.ylabel('El_field, some_unit', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')          
+#        plt.ylabel('El_field, some_unit', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')          
+        plt.ylabel(r'$\frac{kV}{m}$', rotation='horizontal', fontsize=20, horizontalalignment='right', verticalalignment='top')          
         plt.xlim(time_vector[time_number_start], time_vector[time_number_end] )
    #     plt.xlim(time_vector[time_start_index]  , time_vector[time_finish_index] )
         plt.show()
@@ -809,8 +836,8 @@ def main():
  # let's draw the sum of fields, created by two kinds of cloud-particles
     name1 = "QSNOW"
     name2 = "QGRAUP"
-    charge1 = -40*10**(1);
-    charge2 = 120*10**(1);
+    charge1 = -30*10**(3);
+    charge2 = 0;
     plt.figure(figsize=(14,8)) 
     sum_of_fields = 10**(-3)*(np.array(el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, event_datetime, name1, charge1, number_of_time_points)) + np.array(el_field_q_int_z_t(z_index_max, model_datetime, model_period, model_length, event_datetime, name2, charge2, number_of_time_points)))
     plt.plot(time_vector[time_number_start:time_number_end], sum_of_fields[time_number_start:time_number_end])
