@@ -33,7 +33,7 @@ z_index_max = 20;   # it's the maximal index of height: 20 corresponds to approx
 #current_folder = '/mnt/data-internal/reanalysis'    # this is the folder for the 2018-03-05 event
 #current_folder = '/mnt/data-internal/newversion'
 #current_folder = '/mnt/data-internal/Mansell'
-current_folder = '/mnt/data-internal/RDA_DS083.3/2019'
+current_folder = '/data/RDA_DS083.3/2019'
 
 #current_folder = '/mnt/data-internal/nizhniy'
 

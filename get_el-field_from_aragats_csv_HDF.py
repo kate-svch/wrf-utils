@@ -120,13 +120,13 @@ the_fifth_time_for_field_array= [the_fifth_field_time_moment]*(aux_pressure_heig
 the_sixth_time_for_field_array= [the_sixth_field_time_moment]*(aux_pressure_height_number + 1);  
 
 
-csv_folder = '/home/kate-svch/wrfmain/kate/reanalysis/csv_measurements/' + start_date_str + '/';
+csv_folder = '/home/kate/wrfmain-local/kate/reanalysis/csv_measurements/' + start_date_str + '/';
 name_of_value = 'el_field'
 csv_data = pd.read_csv(csv_folder + start_date_str + '_' + name_of_value  + '.csv')
 
 lightning_time_array = []
 lightning_field_array=[]
-lightning_time_data = pd.read_csv('/home/kate-svch/Thunder/Aragats_measurements/2016/2016-06-11/Aragatz-20160611.loc')
+lightning_time_data = pd.read_csv('/home/kate/Thunder/Aragats_measurements/2016/2016-06-11/Aragatz-20160611.loc')
 for j_str in range (0, len(lightning_time_data)):
 #for j_str in range (0, 1):
     j_year = int(lightning_time_data.iloc[j_str, 0][2:4])
@@ -190,7 +190,7 @@ for j_x in range(0, len(x_values) ):
 name_of_value = 'temperature'
 #field_data = pd.read_csv('/home/kate-svch/wrfmain/kate/reanalysis/datetime_and_01/electric_field/' + start_finish_date_str + '_el-field.csv')
 csv_data = pd.read_csv(csv_folder + start_date_str + '_' + name_of_value + '.csv')
-csv_folder = '/home/kate-svch/wrfmain/kate/reanalysis/csv_measurements/' + start_date_str + '/';
+csv_folder = '/home/kate/wrfmain-local/kate/reanalysis/csv_measurements/' + start_date_str + '/';
 csv_length = len(csv_data)
 csv_time =  [0] * csv_length
 
